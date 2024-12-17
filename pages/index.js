@@ -1,94 +1,73 @@
-import ChartsContainer from "../components/charts";
-import React, { useEffect, useState } from "react";
-import CardStats from "../components/CardStats";
+import "@/styles/globals.css";
+import { useRouter } from "next/router";
+// src/components/Login.js
+import React, { useState } from "react";
 
-export default function Home() {
-  const [cardStatArr, setCardStatArr] = useState([]);
-  const lineChartData = [
-    {
-      name: "2019",
-      userCount: 200000,
-    },
-    {
-      name: "2020",
-      userCount: 300000,
-    },
-    {
-      name: "2021",
-      userCount: 600000,
-    },
-    {
-      name: "2022",
-      userCount: 800000,
-    },
-    {
-      name: "2023",
-      userCount: 1000000,
-    },
-  ];
-  const pieChartData = [
-    { name: "Hair cut", value: 400 },
-    { name: "Hair styling", value: 300 },
-    { name: "Beard shaving", value: 300 },
-    { name: "Skin Care", value: 200 },
-  ];
+const Login = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const router = useRouter();
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (username === "" || password === "") {
+      setError("Please fill in all fields");
+      return;
+    } else if (username !== "admin@gmail.com" || password !== "12345678") {
+      setError("Invalid Email or Password");
+    } else {
+      localStorage.setItem("isLoggedIn", true);
+      router.replace("/dashboard"); // Redirect to the dashboard without keeping login in history
+    }
+  };
+
   return (
-    <div
-      className="h-full flex flex-col justify-start"
-      style={{ width: "calc(100% - 256px)" }}
-    >
-      <div className="grid gap-4 w-full lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 p-5">
-        {[
-          {
-            statSubtitle: "Total Income",
-            statTitle: "120,000 $",
-            statArrow: "up",
-            statPercent: "3.48",
-            statDescripiron: "Since last month",
-            statIconName: "Income",
-          },
-          {
-            statSubtitle: "Total Profit",
-            statTitle: "24,000 $",
-            statArrow: "up",
-            statPercent: "3.48",
-            statDescripiron: "Since last month",
-            statIconName: "Profit",
-          },
-          {
-            statSubtitle: "Total Sales",
-            statTitle: "100,000 $",
-            statArrow: "up",
-            statPercent: "3.48",
-            statDescripiron: "Since last month",
-            statIconName: "Sales",
-          },
-          {
-            statSubtitle: "Total Visitors",
-            statTitle: "5000",
-            statArrow: "down",
-            statPercent: "12.3",
-            statDescripiron: "Since last month",
-            statIconName: "View",
-          },
-        ].map((card, index) => (
-          <CardStats
-            key={index}
-            statTitle={card.statTitle}
-            statDescripiron={card.statDescripiron}
-            statPercent={card.statPercent}
-            statSubtitle={card.statSubtitle}
-            statIconName={card.statIconName}
-            statArrow={card.statArrow}
-          />
-        ))}
-      </div>
-      <div className="mt-12">
-        <ChartsContainer
-          pieChartData={pieChartData}
-          lineChartData={lineChartData}
-        />
+    <div className="h-screen flex justify-center items-center bg-purple-700">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+        <h2 className="text-3xl text-center text-purple-700 font-bold mb-4">
+          Groom Admin Login
+        </h2>
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="username" className="block text-purple-700">
+              Email
+            </label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Enter Email"
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-purple-700">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Enter password"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full py-3 bg-purple-700 text-white rounded-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          >
+            Log In
+          </button>
+        </form>
       </div>
     </div>
   );
-}
+};
+
+export default Login;
