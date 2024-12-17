@@ -2,14 +2,13 @@
 import "@/styles/globals.css";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import PropTypes from "prop-types";
 
 export default function App({ Component, pageProps }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const router = useRouter();
   function handleLogout() {
-    router.replace("/");
     localStorage.removeItem("isLoggedIn");
+    router.replace("/");
   }
   useEffect(() => {
     // Check login status
@@ -17,10 +16,15 @@ export default function App({ Component, pageProps }) {
   }, []);
 
   // Redirect to login if not logged in and trying to access protected routes
+  useEffect(() => {
+    if (!isLoggedIn && router.pathname !== "/dashboard") {
+      router.push("/");
+    }
+  }, [isLoggedIn, router]);
 
   return (
     <div className="flex h-screen w-full">
-      {isLoggedIn && router.pathname !== "/" && (
+      {router.pathname !== "/" && (
         <div className="w-64 bg-purple-700 p-6 text-white h-full">
           <div className="font-bold text-xl mb-8">Groom Admin</div>
           <ul className="h-full">
@@ -99,8 +103,3 @@ export default function App({ Component, pageProps }) {
     </div>
   );
 }
-
-App.propTypes = {
-  Component: PropTypes.elementType.isRequired,
-  pageProps: PropTypes.object,
-};
