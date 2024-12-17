@@ -1,4 +1,3 @@
-import React from "react";
 import LineChartContainer from "./LineChartContainer";
 import PieChartContainer from "./PieChartContainer";
 

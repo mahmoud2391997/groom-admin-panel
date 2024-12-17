@@ -2,6 +2,7 @@
 import "@/styles/globals.css";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 
 export default function App({ Component, pageProps }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -103,3 +104,12 @@ export default function App({ Component, pageProps }) {
     </div>
   );
 }
+
+App.propTypes = {
+  Component: PropTypes.elementType.isRequired,
+  pageProps: PropTypes.object,
+};
+
+App.defaultProps = {
+  pageProps: {},
+};

@@ -1,9 +1,7 @@
 import ChartsContainer from "../../components/charts";
-import React, { useEffect, useState } from "react";
 import CardStats from "../../components/CardStats";
 
 export default function Home() {
-  const [cardStatArr, setCardStatArr] = useState([]);
   const lineChartData = [
     {
       name: "2019",

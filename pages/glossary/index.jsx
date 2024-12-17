@@ -1,5 +1,5 @@
 // src/components/Glossary.js
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 const Glossary = () => {
   // Initial glossary terms

@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 export default function CardStats({
   statSubtitle,
   statTitle,
@@ -107,3 +109,19 @@ export default function CardStats({
     </>
   );
 }
+CardStats.propTypes = {
+  statSubtitle: PropTypes.string.isRequired,
+  statTitle: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    .isRequired,
+  statArrow: PropTypes.string,
+  statPercent: PropTypes.number,
+  statDescripiron: PropTypes.string,
+  statIconName: PropTypes.string,
+};
+
+CardStats.defaultProps = {
+  statArrow: "",
+  statPercent: 0,
+  statDescripiron: "",
+  statIconName: "default-icon",
+};

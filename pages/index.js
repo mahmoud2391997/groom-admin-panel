@@ -1,7 +1,7 @@
 import "@/styles/globals.css";
 import { useRouter } from "next/router";
 // src/components/Login.js
-import React, { useState } from "react";
+import { useState } from "react";
 
 const Login = () => {
   const [username, setUsername] = useState("");
