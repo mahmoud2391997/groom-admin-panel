@@ -17,11 +17,6 @@ export default function App({ Component, pageProps }) {
   }, []);
 
   // Redirect to login if not logged in and trying to access protected routes
-  useEffect(() => {
-    if (!isLoggedIn && router.pathname !== "/") {
-      router.push("/dashboard");
-    }
-  }, [isLoggedIn, router]);
 
   return (
     <div className="flex h-screen w-full">
@@ -39,7 +34,7 @@ export default function App({ Component, pageProps }) {
             </li>
             <li>
               <a
-                href="/categories"
+                href="/Categories"
                 className="block py-2 text-gray-300 hover:text-white"
               >
                 Service Categories
