@@ -1,5 +1,6 @@
 import LineChartContainer from "./LineChartContainer";
 import PieChartContainer from "./PieChartContainer";
+import PropTypes from "prop-types";
 
 export default function ChartsContainer({ pieChartData, lineChartData }) {
   return (
@@ -13,3 +14,17 @@ export default function ChartsContainer({ pieChartData, lineChartData }) {
     </div>
   );
 }
+ChartsContainer.propTypes = {
+  pieChartData: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      value: PropTypes.number.isRequired,
+    })
+  ).isRequired,
+  lineChartData: PropTypes.arrayOf(
+    PropTypes.shape({
+      date: PropTypes.string.isRequired,
+      value: PropTypes.number.isRequired,
+    })
+  ).isRequired,
+};

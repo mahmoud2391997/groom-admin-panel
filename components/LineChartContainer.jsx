@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import {
   LineChart,
   Line,
@@ -49,3 +51,13 @@ export default function LineChartContainer({ lineChartData }) {
     </div>
   );
 }
+LineChartContainer.propTypes = {
+  lineChartData: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      data: PropTypes.arrayOf(PropTypes.number).isRequired,
+      borderColor: PropTypes.string,
+      backgroundColor: PropTypes.string,
+    })
+  ).isRequired,
+};
