@@ -8,12 +8,12 @@ export default function App({ Component, pageProps }) {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const router = useRouter();
   function handleLogout() {
-    localStorage.removeItem("isLoggedIn");
+    sessionStorage.removeItem("isLoggedIn");
     router.replace("/");
   }
   useEffect(() => {
     // Check login status
-    setIsLoggedIn(localStorage.getItem("isLoggedIn"));
+    setIsLoggedIn(sessionStorage.getItem("isLoggedIn"));
   }, []);
 
   // Redirect to login if not logged in and trying to access protected routes

@@ -17,7 +17,7 @@ const Login = () => {
     } else if (username !== "admin@gmail.com" || password !== "12345678") {
       setError("Invalid Email or Password");
     } else {
-      localStorage.setItem("isLoggedIn", true);
+      sessionStorage.setItem("isLoggedIn", true);
       router.replace("/dashboard"); // Redirect to the dashboard without keeping login in history
     }
   };
