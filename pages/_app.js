@@ -109,7 +109,3 @@ App.propTypes = {
   Component: PropTypes.elementType.isRequired,
   pageProps: PropTypes.object,
 };
-
-App.defaultProps = {
-  pageProps: {},
-};
