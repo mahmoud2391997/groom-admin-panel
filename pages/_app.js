@@ -2,16 +2,18 @@ import "@/styles/globals.css";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import { ref, get } from "firebase/database";
+import { database } from "../firebase";
 
 export default function App({ Component, pageProps }) {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const router = useRouter();
+
   function handleLogout() {
     sessionStorage.removeItem("isLoggedIn");
     router.replace("/");
   }
   useEffect(() => {
-    // Check login status
     setIsLoggedIn(sessionStorage.getItem("isLoggedIn"));
   }, []);
 

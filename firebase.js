@@ -1,21 +1,25 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { initializeApp, getApps } from "firebase/app";
+import { getDatabase } from "firebase/database";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
+let app;
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: "G-P2TPDX0VNL",
-};
-
+if (!getApps().length) {
+  app = initializeApp({
+    apiKey: "AIzaSyBnISrxT4XwZFDr2Kg_v9zvunjg0RyeaE8",
+    authDomain: "groom202406-web.firebaseapp.com",
+    databaseURL: "https://groom202406-web-default-rtdb.firebaseio.com",
+    projectId: "groom202406-web",
+    storageBucket: "groom202406-web.appspot.com",
+    messagingSenderId: "597837975870",
+    appId: "1:597837975870:web:87df76cff02eeb59031c6f",
+    measurementId: "G-CFXRP9BS2J",
+  });
+} else {
+  app = getApps()[0]; // Use the already-initialized app
+}
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+export const database = getDatabase(app); // Realtime Database
