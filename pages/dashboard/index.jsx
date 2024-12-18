@@ -31,11 +31,8 @@ export default function Home() {
     { name: "Skin Care", value: 200 },
   ];
   return (
-    <div
-      className="h-full flex flex-col justify-start"
-      style={{ width: "calc(100% - 256px)" }}
-    >
-      <div className="grid gap-4 w-full lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 p-5">
+    <div className="h-full w-full flex flex-col justify-start">
+      <div className="grid gap-4 w-full xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 grid-cols-1 p-5">
         {[
           {
             statSubtitle: "Total Income",

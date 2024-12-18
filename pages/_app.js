@@ -25,7 +25,7 @@ export default function App({ Component, pageProps }) {
   return (
     <div className="flex h-screen w-full">
       {router.pathname !== "/" && (
-        <div className="w-64 bg-purple-700 p-6 text-white h-full">
+        <div className="w-60 bg-purple-700 p-6 text-white h-full">
           <div className="font-bold text-xl mb-8">Groom Admin</div>
           <ul className="h-full">
             <li>
@@ -97,7 +97,7 @@ export default function App({ Component, pageProps }) {
           </ul>
         </div>
       )}
-      <div className="flex-grow p-6">
+      <div className="flex-grow" style={{ width: "calc(100% - 240px)" }}>
         <Component {...pageProps} />
       </div>
     </div>

@@ -73,12 +73,13 @@ function Categories() {
   };
 
   return (
-    <div className="mt-0" style={{ width: "calc(100% - 256px)" }}>
-      <section className="w-5/6 m-auto grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid gap-6 mt-5">
+    <div className="mt-0 w-full">
+      <h2 className="ml-10 mt-10 text-2xl font-bold">Main Categories</h2>
+      <section className="grid gap-2 w-full xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 grid-cols-1 p-5">
         {categories.map((category) => (
           <div
             key={category.id}
-            className="lg:h-[430px] m-auto w-[90%] flex flex-col items-center border border-gray-200 rounded-lg p-4 shadow-md"
+            className="lg:h-[430px] m-auto w-[100%] flex flex-col items-center border border-gray-200 rounded-lg p-4 shadow-md"
           >
             <img
               src={category.image}
