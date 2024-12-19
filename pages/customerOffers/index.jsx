@@ -1,69 +1,115 @@
-// pages/services.js
 import React, { useEffect, useState } from "react";
 import ServiceCard from "../../components/ServiceCard";
-import { get, ref } from "firebase/database";
+import ServiceForm from "../../components/ServiceForm";
+import { get, ref, push, remove, update } from "firebase/database";
 import { database } from "@/firebase";
 
 const ServicesPage = () => {
   const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true); // State to track loading
-  const [error, setError] = useState(null); // State to track error
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
-  const fetchUsers = async () => {
-    const dataRef = ref(database, "customerOffers"); // Path to all services
+  const fetchServices = async () => {
+    const dataRef = ref(database, "customerOffers");
     try {
       const snapshot = await get(dataRef);
       if (snapshot.exists()) {
-        console.log(snapshot.val()); // Logs the resolved data
-        return snapshot.val(); // Return the data for further use
+        setServices(
+          Object.entries(snapshot.val()).map(([id, value]) => ({
+            id,
+            ...value,
+          }))
+        );
       } else {
-        console.log("No data available");
-        setError("No data available"); // Set error if no data exists
+        setServices([]); // No data found
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
-      setError("Failed to fetch data. Please try again."); // Set error if fetching fails
+      setError("Failed to fetch data. Please try again.");
     } finally {
-      setLoading(false); // Ensure loading state is set to false after fetching
+      setLoading(false);
+    }
+  };
+
+  const handleAddService = async (newService) => {
+    const dataRef = ref(database, "customerOffers");
+    try {
+      await push(dataRef, newService);
+      fetchServices(); // Refresh services after adding
+      setShowForm(false); // Close form after submission
+    } catch (error) {
+      console.error("Error adding service:", error);
+    }
+  };
+
+  const handleUpdateService = async (id, updatedData) => {
+    const dataRef = ref(database, `customerOffers/${id}`);
+    try {
+      await update(dataRef, updatedData);
+      fetchServices(); // Refresh services after updating
+    } catch (error) {
+      console.error("Error updating service:", error);
+    }
+  };
+
+  const handleDeleteService = async (id) => {
+    const dataRef = ref(database, `customerOffers/${id}`);
+    try {
+      await remove(dataRef);
+      fetchServices(); // Refresh services after deleting
+    } catch (error) {
+      console.error("Error deleting service:", error);
     }
   };
 
   useEffect(() => {
-    const getData = async () => {
-      const fetchedServices = await fetchUsers();
-      if (fetchedServices) {
-        setServices(Object.values(fetchedServices)); // Set the services once data is fetched
-      }
-    };
-    getData();
+    fetchServices();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="p-6 bg-gray-100 min-h-screen flex justify-center items-center">
-        <div className="text-xl font-semibold">Loading...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 bg-gray-100 min-h-screen flex justify-center items-center">
-        <div className="text-xl font-semibold text-red-500">{error}</div>
-      </div>
-    );
-  }
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <h1 className="text-2xl font-bold text-center mb-8">
         Available Services
       </h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {services.map((service) => {
-          return <ServiceCard key={service.offerId} {...service} />;
-        })}
-      </div>
+
+      {/* Add Service Button */}
+      <button
+        onClick={() => setShowForm((prev) => !prev)}
+        className="mb-4 px-4 py-2 bg-green-600 text-white rounded"
+      >
+        {showForm ? "Close Form" : "Add New Service"}
+      </button>
+
+      {/* Add Service Form */}
+      {showForm && (
+        <div className="mb-8 bg-white p-6 rounded shadow">
+          <ServiceForm onSubmit={handleAddService} />
+        </div>
+      )}
+
+      {/* Conditional Rendering */}
+      {services.length === 0 ? (
+        <div className="text-center text-gray-600 mt-8">
+          <p>No data found.</p>
+          <p className="text-sm">Click "Add New Service" to add one.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {services.map((service) => (
+            <ServiceCard
+              key={service.id}
+              {...service}
+              onDelete={() => handleDeleteService(service.id)}
+              onUpdate={(updatedData) =>
+                handleUpdateService(service.id, updatedData)
+              }
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
