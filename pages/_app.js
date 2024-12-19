@@ -86,6 +86,28 @@ export default function App({ Component, pageProps }) {
                 Glossary
               </a>
             </li>
+
+            <li>
+              <a
+                href="/providerServices"
+                className="block py-2 hover:text-purple-700 "
+              >
+                Provider Service
+              </a>
+            </li>
+            <li>
+              <a
+                href="/customerOffers"
+                className="block py-2 hover:text-purple-700 "
+              >
+                Customers Offers
+              </a>
+            </li>
+            <li>
+              <a href="/Users" className="block py-2 hover:text-purple-700 ">
+                Users
+              </a>
+            </li>
             <li>
               <button
                 onClick={() => {
