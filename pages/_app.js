@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { ref, get } from "firebase/database";
 import { database } from "../firebase";
-
+import { Poppins } from "next/font/google";
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["300", "400", "600"], // Add any weights you want to use
+});
 export default function App({ Component, pageProps }) {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const router = useRouter();
@@ -25,15 +29,23 @@ export default function App({ Component, pageProps }) {
   }, [isLoggedIn, router]);
 
   return (
-    <div className="flex h-screen w-full">
+    <div className={poppins.className + "flex h-screen w-full relative"}>
       {router.pathname !== "/" && (
-        <div className="w-60 bg-purple-700 p-6 text-white h-full">
-          <div className="font-bold text-xl mb-8">Groom Admin</div>
-          <ul className="h-full">
+        <div className="w-60  text-white h-full fixed left-0 bg-gray-100">
+          <div className="bg-purple-700 mb-4 h-16 flex  items-center">
+            <img
+              src="/grom-logo.png"
+              width={25}
+              height={25}
+              className="h-10 w-10 ml-5 mr-1"
+            />
+            <span className="font-bold  text-xl  ">Groom Admin</span>
+          </div>
+          <ul className="px-4 text-black ">
             <li>
               <a
                 href="/dashboard"
-                className="block py-2 text-gray-300 hover:text-white"
+                className="block py-2  hover:text-purple-700"
               >
                 Dashboard
               </a>
@@ -41,48 +53,36 @@ export default function App({ Component, pageProps }) {
             <li>
               <a
                 href="/Categories"
-                className="block py-2 text-gray-300 hover:text-white"
+                className="block py-2 hover:text-purple-700 "
               >
                 Service Categories
               </a>
             </li>
             <li>
-              <a
-                href="/services"
-                className="block py-2 text-gray-300 hover:text-white"
-              >
+              <a href="/services" className="block py-2 hover:text-purple-700">
                 Services
               </a>
             </li>
             <li>
-              <a
-                href="/clients"
-                className="block py-2 text-gray-300 hover:text-white"
-              >
+              <a href="/clients" className="block py-2 hover:text-purple-700">
                 Clients
               </a>
             </li>
             <li>
-              <a
-                href="/employees"
-                className="block py-2 text-gray-300 hover:text-white"
-              >
+              <a href="/employees" className="block py-2 hover:text-purple-700">
                 Employees
               </a>
             </li>
             <li>
               <a
                 href="/employeesSchedule"
-                className="block py-2 text-gray-300 hover:text-white"
+                className="block py-2 hover:text-purple-700"
               >
                 Employee Schedule
               </a>
             </li>
             <li>
-              <a
-                href="/glossary"
-                className="block py-2 text-gray-300 hover:text-white"
-              >
+              <a href="/glossary" className="block py-2 hover:text-purple-700 ">
                 Glossary
               </a>
             </li>
@@ -99,7 +99,14 @@ export default function App({ Component, pageProps }) {
           </ul>
         </div>
       )}
-      <div className="flex-grow" style={{ width: "calc(100% - 240px)" }}>
+      <div
+        className={`flex-grow absolute ${
+          router.pathname !== "/" ? "left-60" : ""
+        } `}
+        style={{
+          width: `${router.pathname !== "/" ? "calc(100% - 240px)" : "100%"}`,
+        }}
+      >
         <Component {...pageProps} />
       </div>
     </div>

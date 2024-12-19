@@ -17,10 +17,10 @@ const ServiceCard = ({
   onDelete, // Callback for delete
 }) => {
   return (
-    <div className="max-w-sm mx-auto bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">
+    <div className="max-w-sm mx-auto bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden p-3">
       {/* Image */}
       <img
-        className="w-full h-48 object-cover"
+        className="w-full h-48 object-cover rounded-lg"
         src={offerImages[0]}
         alt={serviceName}
       />
