@@ -8,14 +8,13 @@ const UserList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch users from Firebase
-  const fetchUsers = async () => {
-    const dataRef = ref(database, "users"); // Path to your 'users' data in Firebase
+  const fetchProviderServices = async () => {
+    const dataRef = ref(database, "providerServices"); // Updated path to 'providerServices'
     try {
       const snapshot = await get(dataRef);
       if (snapshot.exists()) {
         console.log(snapshot.val()); // Logs the resolved data
-        return snapshot.val(); // Return the data for further use
+        setServices(snapshot.val()); // Set services state with fetched data
       } else {
         console.log("No data available");
         setError("No data available");
@@ -24,10 +23,9 @@ const UserList = () => {
       console.error("Error fetching data:", error);
       setError("Failed to fetch data. Please try again.");
     } finally {
-      setLoading(false);
+      setLoading(false); // Ensure loading state is set to false after fetching
     }
   };
-
   // Fetch data once component mounts
   useEffect(() => {
     const getData = async () => {

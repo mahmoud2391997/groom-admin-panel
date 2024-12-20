@@ -60,17 +60,22 @@ export default function App({ Component, pageProps }) {
             </li>
             <li>
               <a href="/services" className="block py-2 hover:text-purple-700">
-                Services
+                Customer Complaints
               </a>
             </li>
             <li>
               <a href="/clients" className="block py-2 hover:text-purple-700">
-                Clients
+                Request Reservation
               </a>
             </li>
             <li>
               <a href="/employees" className="block py-2 hover:text-purple-700">
-                Employees
+                Reviews
+              </a>
+            </li>
+            <li>
+              <a href="/employees" className="block py-2 hover:text-purple-700">
+                Report & Analytics
               </a>
             </li>
             <li>

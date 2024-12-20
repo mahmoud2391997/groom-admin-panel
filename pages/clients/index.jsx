@@ -2,15 +2,19 @@ import { useState } from "react";
 
 function Clients() {
   const [clients, setClients] = useState([
-    { id: 1, name: "John Doe", phone: "123-456-7890", service: "Haircut" },
-    { id: 2, name: "Jane Smith", phone: "987-654-3210", service: "Beard Trim" },
-    { id: 3, name: "David Johnson", phone: "555-123-4567", service: "Shave" },
-    { id: 4, name: "Emily Davis", phone: "444-987-6543", service: "Haircut" },
     {
-      id: 5,
-      name: "Michael Brown",
-      phone: "333-654-7890",
-      service: "Beard Trim",
+      id: "FwSSCIr8iBRSSl6302Cy9YXoBnZ2",
+      name: "John Doe",
+      phone: "123-456-7890",
+      service: "Haircut",
+      location: "36.171566009502634, -115.13909570424758",
+      state: "Gambela Region",
+      pincode: "10000",
+      notificationStatus: "Disabled",
+      requestsThisMonth: 0,
+      notificationToken:
+        "d_8R1vo4QsOTJKtpV1zMWd:APA91bGpLfcwc3Ywxyj7r0W0Oh26XuKRuMQW44pVPjgreXpmlb3v3YvrjjXmgfA4q8IfbTBwm4rTz5q0kIn-hn4C4EUvnAT9T7w5Rp9FmL6g_MmxTXhnlxY",
+      lastUpdated: "0",
     },
   ]);
 
@@ -23,7 +27,6 @@ function Clients() {
   });
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filter clients based on search query
   const filteredClients = clients.filter(
     (client) =>
       client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -31,11 +34,9 @@ function Clients() {
       client.service.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Save new or edited client
   const handleSaveClient = () => {
     if (newClient.name && newClient.phone && newClient.service) {
       if (editClient) {
-        // Update existing client
         setClients(
           clients.map((client) =>
             client.id === editClient.id
@@ -44,14 +45,11 @@ function Clients() {
           )
         );
       } else {
-        // Add new client
         setClients([
           ...clients,
           {
-            id: Date.now(),
-            name: newClient.name,
-            phone: newClient.phone,
-            service: newClient.service,
+            id: Date.now().toString(),
+            ...newClient,
           },
         ]);
       }
@@ -63,14 +61,12 @@ function Clients() {
     }
   };
 
-  // Delete client
   const handleDeleteClient = (id) => {
     if (window.confirm("Are you sure you want to delete this client?")) {
       setClients(clients.filter((client) => client.id !== id));
     }
   };
 
-  // Edit client
   const handleEditClient = (client) => {
     setEditClient(client);
     setNewClient({
@@ -85,7 +81,6 @@ function Clients() {
     <div className="w-full p-6">
       <h1 className="text-3xl font-bold mb-6">Clients</h1>
 
-      {/* Search Input */}
       <div className="mb-6">
         <input
           type="text"
@@ -102,6 +97,11 @@ function Clients() {
             <th className="py-2 px-4 text-left">Name</th>
             <th className="py-2 px-4 text-left">Phone</th>
             <th className="py-2 px-4 text-left">Service</th>
+            <th className="py-2 px-4 text-left">Location</th>
+            <th className="py-2 px-4 text-left">State</th>
+            <th className="py-2 px-4 text-left">Notification Status</th>
+            <th className="py-2 px-4 text-left">Requests This Month</th>
+            <th className="py-2 px-4 text-left">Last Updated</th>
             <th className="py-2 px-4 text-left">Actions</th>
           </tr>
         </thead>
@@ -111,6 +111,11 @@ function Clients() {
               <td className="py-2 px-4">{client.name}</td>
               <td className="py-2 px-4">{client.phone}</td>
               <td className="py-2 px-4">{client.service}</td>
+              <td className="py-2 px-4">{client.location}</td>
+              <td className="py-2 px-4">{client.state}</td>
+              <td className="py-2 px-4">{client.notificationStatus}</td>
+              <td className="py-2 px-4">{client.requestsThisMonth}</td>
+              <td className="py-2 px-4">{client.lastUpdated}</td>
               <td className="py-2 px-4 flex space-x-2">
                 <button
                   onClick={() => handleEditClient(client)}
@@ -130,7 +135,6 @@ function Clients() {
         </tbody>
       </table>
 
-      {/* Add Client Button */}
       <div className="mt-6">
         <button
           onClick={() => setFormVisible(true)}
@@ -140,7 +144,6 @@ function Clients() {
         </button>
       </div>
 
-      {/* Popup Form */}
       {isFormVisible && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
