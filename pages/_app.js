@@ -22,11 +22,6 @@ export default function App({ Component, pageProps }) {
   }, []);
 
   // Redirect to login if not logged in and trying to access protected routes
-  useEffect(() => {
-    if (!isLoggedIn && router.pathname !== "/dashboard") {
-      router.push("/");
-    }
-  }, [isLoggedIn, router]);
 
   return (
     <div className={poppins.className + "flex h-screen w-full relative"}>

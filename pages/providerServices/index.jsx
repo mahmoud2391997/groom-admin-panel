@@ -1,246 +1,102 @@
-import React, { useEffect, useState } from "react";
-import ServiceCard from "../../components/ProviderServicesCard";
-import { get, ref, remove, push, set } from "firebase/database";
-import { database } from "@/firebase";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
 
-const ServiceList = () => {
-  const [services, setServices] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const ProviderServicesPage = () => {
+  const router = useRouter();
+
+  // Mock services data
+  const [services, setServices] = useState([
+    {
+      serviceId: "202412172200386190080094",
+      serviceName: "hjkkk",
+      serviceType: "Nails",
+      servicePrice: 2233,
+      serviceDeposit: 999,
+      workingHours: 8,
+      maximumBookingPerDay: 8,
+      serviceImages: [
+        "https://firebasestorage.googleapis.com/v0/b/groom202406-web.appspot.com/o/users%2FJr2L02JH5TeHo1iELFEhrG9ucoQ2%2FproviderServiceImages%2F1734462029037.jpg?alt=media&token=493357d8-4eb0-4775-b54e-1e4ecfd2ed7e",
+      ],
+      userId: "Jr2L02JH5TeHo1iELFEhrG9ucoQ2",
+    },
+    {
+      serviceId: "202412172300487290080105",
+      serviceName: "Hair Cut",
+      serviceType: "Hair",
+      servicePrice: 1500,
+      serviceDeposit: 500,
+      workingHours: 6,
+      maximumBookingPerDay: 5,
+      serviceImages: ["https://via.placeholder.com/150"],
+      userId: "Jr2L02JH5TeHo1iELFEhrG9ucoQ2",
+    },
+  ]);
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [showPopup, setShowPopup] = useState(false);
-  const [currentService, setCurrentService] = useState(null);
 
-  const fetchProviderServices = async () => {
-    const dataRef = ref(database, "providerServices");
-    try {
-      const snapshot = await get(dataRef);
-      if (snapshot.exists()) {
-        setServices(snapshot.val());
-      } else {
-        setError("No data available");
-      }
-    } catch (error) {
-      setError("Failed to fetch data. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async (serviceId) => {
-    const serviceRef = ref(database, `providerServices/${serviceId}`);
-    try {
-      await remove(serviceRef);
-      setServices((prevServices) => {
-        const updatedServices = { ...prevServices };
-        delete updatedServices[serviceId];
-        return updatedServices;
-      });
-    } catch (error) {
-      setError("Failed to delete service. Please try again.");
-    }
-  };
-
-  const handleOpenPopup = (service = null) => {
-    setCurrentService(service);
-    setShowPopup(true);
-  };
-
-  const handleClosePopup = () => {
-    setCurrentService(null);
-    setShowPopup(false);
-  };
-
-  const handleSearch = (event) => {
-    setSearchQuery(event.target.value);
-  };
-
-  const handleSubmit = async (service) => {
-    try {
-      if (service.serviceId) {
-        // Find the existing service
-        const existingService = services[service.serviceId];
-
-        // Identify only the changed fields
-        const updatedFields = Object.keys(service).reduce((acc, key) => {
-          if (service[key] !== existingService[key]) {
-            acc[key] = service[key];
-          }
-          return acc;
-        }, {});
-
-        if (Object.keys(updatedFields).length > 0) {
-          // Update only the changed fields
-          const serviceRef = ref(
-            database,
-            `providerServices/${service.serviceId}`
-          );
-          await update(serviceRef, updatedFields);
-        }
-      } else {
-        // Add new service
-        const newServiceRef = push(ref(database, "providerServices"));
-        service.serviceId = newServiceRef.key;
-        await set(newServiceRef, service);
-      }
-      setServices((prevServices) => ({
-        ...prevServices,
-        [service.serviceId]: service,
-      }));
-      handleClosePopup();
-    } catch (error) {
-      setError("Failed to save service. Please try again.");
-    }
-  };
-
-  useEffect(() => {
-    fetchProviderServices();
-  }, []);
-
-  const filteredServices = Object.values(services).filter((service) =>
+  // Filter services based on search query
+  const filteredServices = services.filter((service) =>
     service.serviceName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  // Navigate to single service page
+  const handleViewService = (serviceId) => {
+    console.log(serviceId);
+
+    router.push(`/providerServices/${serviceId}`);
+  };
 
   return (
-    <div className="m-auto p-4">
-      {/* Search Bar */}
-      <div className="mb-4 flex justify-between">
+    <div className="w-full p-6">
+      <h1 className="text-3xl font-bold mb-6">Provider Services</h1>
+
+      {/* Search Input */}
+      <div className="mb-6">
         <input
           type="text"
-          placeholder="Search services..."
           value={searchQuery}
-          onChange={handleSearch}
-          className="px-4 py-2 border border-gray-300 rounded-md"
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search services"
+          className="border px-4 py-2 rounded-lg w-full"
         />
-        <button
-          onClick={() => handleOpenPopup()}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md"
-        >
-          Add Service
-        </button>
       </div>
 
-      {/* Service Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {filteredServices.map((service) => (
-          <ServiceCard
-            key={service.serviceId}
-            serviceId={service.serviceId}
-            address={service.address}
-            description={service.description}
-            cancellationPolicy={service.cancellationPolicy}
-            serviceImages={service.serviceImages}
-            appointmentDuration={service.appointmentDuration}
-            bufferTime={service.bufferTime}
-            location={service.location}
-            maximumBookingPerDay={service.maximumBookingPerDay}
-            serviceDeposit={service.serviceDeposit}
-            serviceName={service.serviceName}
-            onUpdate={() => handleOpenPopup(service)}
-            onDelete={() => handleDelete(service.serviceId)}
-          />
-        ))}
-      </div>
-
-      {/* Popup Form */}
-      {showPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-4 rounded-md w-1/3">
-            <h2 className="text-xl font-bold mb-4">
-              {currentService ? "Edit Service" : "Add Service"}
-            </h2>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                const service = {
-                  serviceId: currentService?.serviceId || null,
-                  serviceName: formData.get("serviceName"),
-                  description: formData.get("description"),
-                  location: formData.get("location"),
-                  appointmentDuration: formData.get("appointmentDuration"),
-                  bufferTime: formData.get("bufferTime"),
-                  maximumBookingPerDay: formData.get("maximumBookingPerDay"),
-                  serviceDeposit: formData.get("serviceDeposit"),
-                  cancellationPolicy: formData.get("cancellationPolicy"),
-                };
-                handleSubmit(service);
-              }}
-            >
-              <input
-                name="serviceName"
-                defaultValue={currentService?.serviceName || ""}
-                placeholder="Service Name"
-                className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-                required
-              />
-              <textarea
-                name="description"
-                defaultValue={currentService?.description || ""}
-                placeholder="Description"
-                className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-                required
-              />
-              <input
-                name="location"
-                defaultValue={currentService?.location || ""}
-                placeholder="Location"
-                className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              />
-              <input
-                name="appointmentDuration"
-                defaultValue={currentService?.appointmentDuration || ""}
-                placeholder="Appointment Duration"
-                className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              />
-              <input
-                name="bufferTime"
-                defaultValue={currentService?.bufferTime || ""}
-                placeholder="Buffer Time"
-                className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              />
-              <input
-                name="maximumBookingPerDay"
-                defaultValue={currentService?.maximumBookingPerDay || ""}
-                placeholder="Max Bookings Per Day"
-                className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              />
-              <input
-                name="serviceDeposit"
-                defaultValue={currentService?.serviceDeposit || ""}
-                placeholder="Service Deposit"
-                className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              />
-              <textarea
-                name="cancellationPolicy"
-                defaultValue={currentService?.cancellationPolicy || ""}
-                placeholder="Cancellation Policy"
-                className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              />
-              <div className="flex justify-end space-x-4">
-                <button
-                  type="button"
-                  onClick={handleClosePopup}
-                  className="px-4 py-2 bg-gray-300 rounded-md"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded-md"
-                >
-                  Save
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+        <thead>
+          <tr className="bg-gray-200">
+            <th className="py-2 px-4 text-left">Service Name</th>
+            <th className="py-2 px-4 text-left">Type</th>
+            <th className="py-2 px-4 text-left">Price</th>
+            <th className="py-2 px-4 text-left">Deposit</th>
+            <th className="py-2 px-4 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredServices.map((service) => (
+            <tr key={service.serviceId} className="border-t">
+              <td className="py-2 px-4">{service.serviceName}</td>
+              <td className="py-2 px-4">{service.serviceType}</td>
+              <td className="py-2 px-4">${service.servicePrice}</td>
+              <td className="py-2 px-4">${service.serviceDeposit}</td>
+              <td className="py-2 px-4 flex space-x-2">
+                <Link href={`/providerServices/${service.serviceId}`}>
+                  <button
+                    onClick={() => {
+                      console.log("asdasd");
+                    }}
+                    className="px-3 py-1 text-purple-500 border-2 border-purple-500 rounded-md"
+                  >
+                    View
+                  </button>
+                </Link>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
 
-export default ServiceList;
+export default ProviderServicesPage;

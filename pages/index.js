@@ -1,5 +1,10 @@
 import { useRouter } from "next/router";
 import { useState } from "react";
+import bcrypt from "bcryptjs";
+const jwt = require("jsonwebtoken");
+import { get, ref, set, update } from "firebase/database";
+import { database } from "@/firebase.mjs";
+import { SignJWT } from "jose";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -7,27 +12,96 @@ const Login = () => {
   const [error, setError] = useState("");
   const router = useRouter();
   // Handle form submission
-  const handleSubmit = (e) => {
+  async function saveTokenToFirebase(email, token) {
+    try {
+      console.log(email);
+
+      const tokenRef = ref(database, `admins/${email}`); // Path to the admin document
+      await update(tokenRef, { token: token }); // Save the token under the admin's email
+      console.log("Token saved to Firebase successfully");
+    } catch (error) {
+      console.error("Error saving token to Firebase:", error);
+    }
+  }
+  const findUserByEmailAndPassword = async (
+    email,
+    plainTextPassword,
+    userArray
+  ) => {
+    try {
+      // Find user by email
+      const user = userArray.find((user) => user.email === email);
+
+      if (!user) {
+        setError("Invalid Email or Password");
+
+        return false;
+      }
+
+      // Verify password
+      const isPasswordMatch = await bcrypt.compare(
+        plainTextPassword,
+        user.password
+      );
+      if (isPasswordMatch) {
+        console.log("User authenticated successfully");
+        const dataRef = ref(database, "secretKey");
+        const snapshot = await get(dataRef);
+        const secretKey = Object.values(snapshot.val())[0].secretKey;
+        const secret = new TextEncoder().encode(secretKey); // Encode secret to Uint8Array
+        const token = await new SignJWT({ email: username })
+          .setProtectedHeader({ alg: "HS256" })
+          .setExpirationTime("1h") // Token expires in 1 hour
+          .sign(secret);
+        console.log(token);
+        console.log(snapshot.val());
+        const dataRef2 = ref(database, "admins");
+        const snapshot2 = await get(dataRef2);
+        const secretKey2 = Object.keys(snapshot2.val())[0];
+        saveTokenToFirebase(secretKey2, token);
+        sessionStorage.setItem("token", token);
+        router.replace("/dashboard");
+        return true;
+      } else {
+        setError("Invalid Email or Password");
+        return false;
+      }
+    } catch (error) {
+      console.error("Error during authentication:", error);
+      return false;
+    }
+  };
+  async function handleSubmit(e) {
     e.preventDefault();
     if (username === "" || password === "") {
       setError("Please fill in all fields");
       return;
-    } else if (username !== "admin@gmail.com" || password !== "12345678") {
-      setError("Invalid Email or Password");
     } else {
-      sessionStorage.setItem("isLoggedIn", true);
-      router.replace("/dashboard"); // Redirect to the dashboard without keeping login in history
+      const dataRef = ref(database, "admins");
+      try {
+        const snapshot = await get(dataRef);
+        findUserByEmailAndPassword(
+          username,
+          password,
+          Object.values(snapshot.val())
+        );
+      } catch (error) {
+        setError("Internet Connection Error");
+        console.error("Error fetching data:", error);
+      }
     }
-  };
-
+    // Redirect to the dashboard without keeping login in history
+  }
   return (
     <div className="h-screen flex justify-center items-center bg-purple-700">
       <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-        <h2 className="text-3xl text-center text-purple-700 font-bold mb-4">
-          Groom Admin Login
-        </h2>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            handleSubmit(e);
+          }}
+          className="space-y-4"
+        >
           <div>
             <label htmlFor="username" className="block text-purple-700">
               Email
