@@ -1,42 +1,34 @@
-import { ref, push } from "firebase/database";
-import { database } from "./firebase.mjs"; // Adjust the import as necessary
-import bcrypt from "bcrypt"; // Make sure to install bcrypt: npm install bcrypt
-
-// Function to add a customer complaint to the "admins" collection
-const addCustomerComplaint = async (complaintData) => {
-  const complaintsRef = ref(database, "admins");
+function isTokenExpired(token) {
+  if (!token) {
+    throw new Error("Token is required");
+  }
 
   try {
-    // Hash the password
-    const saltRounds = 10; // Adjust the cost factor as needed
-    const hashedPassword = await bcrypt.hash(
-      complaintData.password,
-      saltRounds
-    );
+    // Decode the token payload without verifying it
+    const payloadBase64 = token.split(".")[1];
+    const payload = JSON.parse(atob(payloadBase64));
 
-    // Replace plain text password with the hashed password
-    const complaintDataWithHashedPassword = {
-      ...complaintData,
-      password: hashedPassword,
-    };
+    // Check if the token has an exp field
+    if (!payload.exp) {
+      throw new Error("Token does not have an expiration time");
+    }
 
-    // Push the data with the hashed password to Firebase
-    const newComplaintRef = await push(
-      complaintsRef,
-      complaintDataWithHashedPassword
-    );
-    console.log("Complaint added successfully with ID:", newComplaintRef.key);
+    // Calculate expiration time in milliseconds
+    const expirationTime = payload.exp * 1000; // JWT exp is in seconds
+    const currentTime = Date.now();
+
+    // Return whether the token is expired
+    return currentTime >= expirationTime;
   } catch (error) {
-    console.error("Error adding complaint:", error);
+    console.error("Failed to decode token:", error);
+    return true; // Assume expired if token is invalid
   }
-};
+}
 
-// Example data
-const complaintData = {
-  email: "admin@gmail.com",
-  // Could be "Pending", "In Progress", or "Resolved"
-  password: "12345678", // Add password to the complaint data
-};
-
-// Add the example complaint to Firebase
-addCustomerComplaint(complaintData);
+// Example usage
+const token = "12343232";
+if (isTokenExpired(token)) {
+  console.log("Token is expired");
+} else {
+  console.log("Token is valid");
+}

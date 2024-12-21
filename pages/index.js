@@ -12,17 +12,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const router = useRouter();
   // Handle form submission
-  async function saveTokenToFirebase(email, token) {
-    try {
-      console.log(email);
 
-      const tokenRef = ref(database, `admins/${email}`); // Path to the admin document
-      await update(tokenRef, { token: token }); // Save the token under the admin's email
-      console.log("Token saved to Firebase successfully");
-    } catch (error) {
-      console.error("Error saving token to Firebase:", error);
-    }
-  }
   const findUserByEmailAndPassword = async (
     email,
     plainTextPassword,
@@ -55,10 +45,7 @@ const Login = () => {
           .sign(secret);
         console.log(token);
         console.log(snapshot.val());
-        const dataRef2 = ref(database, "admins");
-        const snapshot2 = await get(dataRef2);
-        const secretKey2 = Object.keys(snapshot2.val())[0];
-        saveTokenToFirebase(secretKey2, token);
+
         sessionStorage.setItem("token", token);
         router.replace("/dashboard");
         return true;

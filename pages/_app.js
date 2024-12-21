@@ -10,16 +10,49 @@ const poppins = Poppins({
   weight: ["300", "400", "600"], // Add any weights you want to use
 });
 export default function App({ Component, pageProps }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const router = useRouter();
+  function isTokenExpired(token) {
+    if (!token) {
+      throw new Error("Token is required");
+    }
 
+    try {
+      // Decode the token payload without verifying it
+      const payloadBase64 = token.split(".")[1];
+      const payload = JSON.parse(atob(payloadBase64));
+
+      // Check if the token has an exp field
+      if (!payload.exp) {
+        throw new Error("Token does not have an expiration time");
+      }
+
+      // Calculate expiration time in milliseconds
+      const expirationTime = payload.exp * 1000; // JWT exp is in seconds
+      const currentTime = Date.now();
+
+      // Return whether the token is expired
+      return currentTime >= expirationTime;
+    } catch (error) {
+      return true; // Assume expired if token is invalid
+    }
+  }
+
+  // Example usage
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+
+    if (!token || isTokenExpired(token)) {
+      sessionStorage.removeItem("token");
+      router.replace("/");
+    } else {
+      console.log("Token is valid");
+    }
+  }, []);
   function handleLogout() {
     sessionStorage.removeItem("isLoggedIn");
     router.replace("/");
   }
-  useEffect(() => {
-    setIsLoggedIn(sessionStorage.getItem("isLoggedIn"));
-  }, []);
 
   // Redirect to login if not logged in and trying to access protected routes
 
