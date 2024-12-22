@@ -176,7 +176,7 @@ const UserList = () => {
       </form>
 
       {/* User Cards */}
-      <div className="flex flex-wrap gap-4 justify-around">
+      <div className="flex flex-wrap gap-4 justify-start">
         {filteredUsers.map((user) => (
           <UserCard
             key={user.uid}

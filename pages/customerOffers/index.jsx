@@ -1,21 +1,43 @@
 import React, { useEffect, useState } from "react";
-import ServiceCard from "../../components/ServiceCard";
-import ServiceForm from "../../components/ServiceForm";
+
 import { get, ref, push, remove, update } from "firebase/database";
 import { database } from "@/firebase";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 const ServicesPage = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-
+  const [filteredServices, setFilteredServices] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+  useEffect(() => {
+    setFilteredServices(
+      services.filter((service) =>
+        service.serviceName.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [searchQuery]);
   const fetchServices = async () => {
     const dataRef = ref(database, "customerOffers");
     try {
       const snapshot = await get(dataRef);
       if (snapshot.exists()) {
+        console.log(
+          Object.entries(snapshot.val()).map(([id, value]) => ({
+            id,
+            ...value,
+          }))
+        );
+
         setServices(
+          Object.entries(snapshot.val()).map(([id, value]) => ({
+            id,
+            ...value,
+          }))
+        );
+        setFilteredServices(
           Object.entries(snapshot.val()).map(([id, value]) => ({
             id,
             ...value,
@@ -70,46 +92,55 @@ const ServicesPage = () => {
   if (error) return <div>{error}</div>;
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold text-center mb-8">
-        Available Services
-      </h1>
+    <div className="w-full p-6">
+      <h1 className="text-3xl font-bold mb-6">Customer Offers</h1>
 
-      {/* Add Service Button */}
-      <button
-        onClick={() => setShowForm((prev) => !prev)}
-        className="mb-4 px-4 py-2 bg-green-600 text-white rounded"
-      >
-        {showForm ? "Close Form" : "Add New Service"}
-      </button>
+      {/* Search Input */}
+      <div className="mb-6">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search services"
+          className="border px-4 py-2 rounded-lg w-full"
+        />
+      </div>
 
-      {/* Add Service Form */}
-      {showForm && (
-        <div className="mb-8 bg-white p-6 rounded shadow">
-          <ServiceForm onSubmit={handleAddService} />
-        </div>
-      )}
-
-      {/* Conditional Rendering */}
-      {services.length === 0 ? (
-        <div className="text-center text-gray-600 mt-8">
-          <p>No data found.</p>
-          <p className="text-sm">Click "Add New Service" to add one.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((service) => (
-            <ServiceCard
-              key={service.id}
-              {...service}
-              onDelete={() => handleDeleteService(service.id)}
-              onUpdate={(updatedData) =>
-                handleUpdateService(service.id, updatedData)
-              }
-            />
+      <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+        <thead>
+          <tr className="bg-gray-200">
+            <th className="py-2 px-4 text-left">Service Name</th>
+            <th className="py-2 px-4 text-left">Type</th>
+            <th className="py-2 px-4 text-left">Price Range</th>
+            <th className="py-2 px-4 text-left">Deposit Payment</th>
+            <th className="py-2 px-4 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredServices.map((service) => (
+            <tr key={service.id} className="border-t">
+              <td className="py-2 px-4">{service.serviceName}</td>
+              <td className="py-2 px-4">{service.serviceType}</td>
+              <td className="py-2 px-4">{service.priceRange}$</td>
+              <td className="py-2 px-4">
+                {service.deposit ? "Provided" : "Not provided"}
+              </td>
+              <td className="py-2 px-4 flex space-x-2">
+                <Link href={`/customerOffers/${service.id}`}>
+                  <button
+                    onClick={() => {
+                      console.log(service.id);
+                    }}
+                    className="px-3 py-1 text-purple-500 border-2 border-purple-500 rounded-md"
+                  >
+                    View
+                  </button>
+                </Link>
+              </td>
+            </tr>
           ))}
-        </div>
-      )}
+        </tbody>
+      </table>
     </div>
   );
 };

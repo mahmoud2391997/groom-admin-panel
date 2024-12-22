@@ -106,14 +106,7 @@ export default function App({ Component, pageProps }) {
                 Report & Analytics
               </a>
             </li>
-            <li>
-              <a
-                href="/employeesSchedule"
-                className="block py-2 hover:text-purple-700"
-              >
-                Employee Schedule
-              </a>
-            </li>
+
             <li>
               <a href="/glossary" className="block py-2 hover:text-purple-700 ">
                 Glossary

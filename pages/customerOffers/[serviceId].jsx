@@ -13,7 +13,7 @@ const SingleServicePage = () => {
   const { serviceId } = router.query;
 
   const fetchSingleService = async (serviceId) => {
-    const dataRef = ref(database, `providerServices/${serviceId}`);
+    const dataRef = ref(database, `customerOffers/${serviceId}`);
     setState((prevState) => ({ ...prevState, loading: true, error: null }));
     try {
       const snapshot = await get(dataRef);
@@ -55,23 +55,36 @@ const SingleServicePage = () => {
   return (
     <div className="w-full p-6">
       <h1 className="ml-[2.5%] mb-5 text-5xl font-semibold">
-        Single Provider Serivce
+        Single Customer Offer
       </h1>
       <div className="w-[95%] bg-gray-200 rounded-lg m-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-10">
           <div className="w-full h-full flex flex-col">
             <h2 className="text-3xl font-medium">Service Info</h2>
-            <div className="sm:p-6 md:p-10 max-h-[615px] w-full mx-auto bg-white rounded-lg mt-7">
+            <div className="sm:p-6 md:p-10 w-full mx-auto bg-white rounded-lg mt-7">
               {[
-                { label: "Service Id", value: service.serviceId },
+                { label: "Service Id", value: service.id },
                 { label: "Service Name", value: service.serviceName },
                 { label: "Service Type", value: service.serviceType },
-                { label: "Service Deposit", value: service.serviceDeposit },
-                { label: "Service Price", value: service.servicePrice },
-                { label: "Working Hours", value: service.workingHours },
                 {
-                  label: "Maximum Booking Per Day",
-                  value: service.maximumBookingPerDay,
+                  label: "Service Deposit",
+                  value: service.deposit ? "Yes" : "No",
+                },
+                { label: "Service Price Range", value: service.priceRange },
+                { label: "Working Hours", value: "Not Specified" }, // Adjust based on actual data
+                { label: "Maximum Booking Per Day", value: "Not Specified" }, // Adjust based on actual data
+                { label: "Address", value: service.address },
+                { label: "Radius", value: service.radius },
+                { label: "Selected Time", value: service.selectedTime },
+                { label: "User ID", value: service.userId },
+                { label: "Description", value: service.description },
+                {
+                  label: "Date/Time",
+                  value: new Date(service.dateTime).toLocaleString(),
+                },
+                {
+                  label: "Location",
+                  value: `Lat: ${service.location.latitude}, Lng: ${service.location.longitude}`,
                 },
               ].map(({ label, value }, index) => (
                 <div
@@ -88,18 +101,17 @@ const SingleServicePage = () => {
               ))}
             </div>
           </div>
-          <div className="w-full h-full flex flex-col ">
+          <div className="w-full h-full">
             <h2 className="text-3xl font-medium">Service Images</h2>
 
-            {service.serviceImages && service.serviceImages.length > 0 ? (
-              service.serviceImages.map((image, index) => (
+            {service.serviceImages ? (
+              service.serviceImages?.map((image) => {
                 <img
-                  key={index} // Always provide a unique key when rendering lists in React
                   src={image}
-                  alt={service.serviceName || "Service Image"}
-                  className="rounded-lg shadow-md w-full mt-7 h-auto"
-                />
-              ))
+                  alt={service.serviceName}
+                  className="rounded-lg shadow-md w-full h-[90%] mt-7"
+                />;
+              })
             ) : (
               <div className="w-full h-[90vh] flex justify-center items-center">
                 <h3>No Images Provided</h3>
