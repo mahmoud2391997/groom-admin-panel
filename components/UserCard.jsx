@@ -1,126 +1,450 @@
-const UserCard = ({
-  photoURL,
-  notificationToken,
-  notification_status,
-  location,
-  state,
-  pincode,
-  requestsThisMonth,
-  uid,
-  updatedOn,
-  fullName,
-  contactNumber,
-}) => {
-  // Handle location if it's an object with latitude and longitude
-  const formattedLocation = location
-    ? `${location.latitude}, ${location.longitude}`
-    : "Location not available";
+import { useState, useEffect } from "react";
+import { ref, get, update } from "firebase/database";
+import axios from "axios";
+import { database } from "@/firebase.mjs";
+
+const UserCard = ({ uid }) => {
+  const [user, setUserData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const userRef = ref(database, `users/${uid}`);
+      try {
+        const snapshot = await get(userRef);
+        console.log(snapshot.val());
+
+        if (snapshot.exists()) {
+          setUserData(snapshot.val());
+          setEditData(snapshot.val());
+        } else {
+          console.error("User data not found.");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [uid]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditData((prevData) => ({ ...prevData, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    const userRef = ref(database, `users/${uid}`);
+    try {
+      await update(userRef, editData);
+      alert("User data updated successfully.");
+      setUserData(editData);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error updating user data:", error);
+      alert("Failed to update user data. Please try again.");
+    }
+  };
+
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
+
+  if (!user) {
+    return <p>User data not found.</p>;
+  }
 
   return (
-    <div className="max-w-sm w-[300px] rounded-lg overflow-hidden shadow-lg bg-white mb-4">
-      <img
-        src={photoURL}
-        alt="User Photo"
-        className="w-full h-48 object-cover rounded-t-lg"
-      />
+    <div className="w-full h-full flex flex-col">
+      <h2 className="text-3xl font-medium">User Basic Info</h2>
+      <div className="sm:p-6 md:p-10 h-auto w-full mx-auto bg-white rounded-lg mt-7">
+        {[
+          { label: "Photo URL", value: user.photoURL, key: "photoURL" },
 
-      <div className="p-6">
-        <h2 className="text-xl font-semibold text-gray-800">
-          Name: {fullName}
-        </h2>
-        <div className="text-gray-600 mt-2">
-          Location:
-          {location ? (
-            <CoordinatesToAddress
-              latitude={location.latitude}
-              longitude={location.longitude}
-            />
+          { label: "Bio", value: user.bio, key: "bio" },
+          {
+            label: "Contact Number",
+            value: user.contactNumber,
+            key: "contactNumber",
+          },
+
+          {
+            label: "Default Address",
+            value: user.defaultAddress,
+            key: "defaultAddress",
+          },
+          { label: "Email", value: user.email, key: "email" },
+          { label: "Is Blocked", value: user.isblocked, key: "isblocked" },
+
+          {
+            label: "Membership",
+            value: JSON.stringify(user.membership),
+            key: "membership",
+          },
+        ].map(({ label, key, value }, index) =>
+          key == "photoURL" ? (
+            isEditing ? (
+              <div className="mb-4">
+                <label className="block mb-2 font-medium text-gray-700">
+                  Profile Picture:
+                </label>
+                <input
+                  type="text"
+                  name="photoURL"
+                  value={editData.photoURL || ""}
+                  onChange={handleInputChange}
+                  placeholder="Profile Picture URL"
+                  className="border border-gray-300 rounded-md w-full px-2 py-1"
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col mb-5">
+                <div className="w-1/2 text-left text-sm md:text-base">
+                  <strong>Profile Picture</strong>
+                </div>
+                <img
+                  src={value}
+                  alt="User Photo"
+                  className="w-48 h-48 object-cover mt-5 rounded-t-lg"
+                />
+              </div>
+            )
           ) : (
-            "N/A"
-          )}
-        </div>
-        <p className="text-gray-600">State: {state}</p>
-        <p className="text-gray-600">Pincode: {pincode}</p>
-
-        <div className="mt-4">
-          <p className="font-medium text-gray-700">
-            Notification Status:{" "}
-            <span
-              className={
-                notification_status ? "text-green-500" : "text-red-500"
-              }
+            <div key={index} className="flex border-b text-[#525252] py-4 mb-4">
+              <div className="w-1/2 text-left text-sm md:text-base">
+                <strong>{label}:</strong>
+              </div>
+              <div className="w-1/2 text-right text-sm md:text-base">
+                {isEditing ? (
+                  <input
+                    type="text"
+                    name={key}
+                    value={editData[key] || ""}
+                    onChange={handleInputChange}
+                    className="border rounded p-1 w-full"
+                  />
+                ) : (
+                  value || "N/A"
+                )}
+              </div>
+            </div>
+          )
+        )}
+      </div>
+      <div className="flex gap-2 mt-4">
+        {isEditing ? (
+          <>
+            <button
+              onClick={handleSave}
+              className="bg-green-500 text-white px-4 py-2 rounded-md"
             >
-              {notification_status ? "Enabled" : "Disabled"}
-            </span>
-          </p>
-          <p className="font-medium text-gray-700">
-            Requests This Month: {requestsThisMonth}
-          </p>
-        </div>
-
-        <div className="mt-4">
-          <p className="text-gray-700">Contact Number: {contactNumber}</p>
-          <p className="text-gray-600">Last Updated: {updatedOn}</p>
-        </div>
-
-        <div className="flex gap-2 mt-4">
+              Save
+            </button>
+            <button
+              onClick={() => setIsEditing(false)}
+              className="bg-gray-500 text-white px-4 py-2 rounded-md"
+            >
+              Cancel
+            </button>
+          </>
+        ) : (
           <button
-            onClick={() => onEdit(uid, { state: "New State" })}
+            onClick={() => setIsEditing(true)}
             className="bg-blue-500 text-white px-4 py-2 rounded-md"
           >
             Edit
           </button>
-          <button
-            onClick={() => onDelete(uid)}
-            className="bg-red-500 text-white px-4 py-2 rounded-md"
-          >
-            Delete
-          </button>
-        </div>
+        )}
       </div>
+      <h2 className="text-3xl font-medium mt-7">User Other Info</h2>
+      <div className="sm:p-6 md:p-10 h-auto w-full mx-auto bg-white rounded-lg mt-7">
+        {[
+          {
+            label: "Contact Number",
+            value: user.contactNumber,
+            key: "contactNumber",
+          },
+          { label: "Country", value: user.country, key: "country" },
+          {
+            label: "Date of Birth",
+            value: user.dateOfBirth,
+            key: "dateOfBirth",
+          },
+          {
+            label: "Default Address",
+            value: user.defaultAddress,
+            key: "defaultAddress",
+          },
+          { label: "Email", value: user.email, key: "email" },
+          { label: "Full Name", value: user.fullName, key: "fullName" },
+          { label: "Is Blocked", value: user.isblocked, key: "isblocked" },
+          { label: "Joined On", value: user.joinedOn, key: "joinedOn" },
+          {
+            label: "Location",
+            value: `${user.location.latitude}, ${user.location.longitude}`,
+            key: "location",
+          },
+          {
+            label: "Membership",
+            value: JSON.stringify(user.membership),
+            key: "membership",
+          },
+
+          {
+            label: "Notification Status",
+            value: user.notification_status,
+            key: "notification_status",
+          },
+          {
+            label: "is Provider",
+            value: user.providerUserModel ? "Yes" : "No",
+            key: "providerUserModel",
+          },
+          { label: "Pincode", value: user.pincode, key: "pincode" },
+          {
+            label: "Requests This Month",
+            value: user.requestsThisMonth,
+            key: "requestsThisMonth",
+          },
+          { label: "State", value: user.state, key: "state" },
+          { label: "UID", value: user.uid, key: "uid" },
+          { label: "Updated On", value: user.updatedOn, key: "updatedOn" },
+        ].map(({ label, key, value }, index) => (
+          <div key={index} className="flex border-b text-[#525252] py-4 mb-4">
+            <div className="w-1/2 text-left text-sm md:text-base">
+              <strong>{label}:</strong>
+            </div>
+            <div className="w-1/2 text-right text-sm md:text-base">
+              {isEditing && key !== "locationAddress" ? (
+                <input
+                  type="text"
+                  name={key}
+                  value={editData[key] || ""}
+                  onChange={handleInputChange}
+                  className="border rounded p-1 w-full"
+                />
+              ) : (
+                value || "N/A"
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      {user.providerUserModel ? (
+        <div className="w-full h-full flex flex-col mt-7">
+          <h2 className="text-3xl font-medium">Provider Info</h2>
+          <div className="sm:p-6 md:p-10 h-auto w-full mx-auto bg-white rounded-lg mt-7">
+            {[
+              {
+                label: "About",
+                value: user.providerUserModel.about,
+                key: "about",
+              },
+              {
+                label: "Address Line",
+                value: user.providerUserModel.addressLine,
+                key: "addressLine",
+              },
+              {
+                label: "Base Price",
+                value: user.providerUserModel.basePrice,
+                key: "basePrice",
+              },
+              {
+                label: "Created On",
+                value: user.providerUserModel.createdOn,
+                key: "createdOn",
+              },
+              {
+                label: "Provider Location",
+                value: `${user.providerUserModel.location.latitude}, ${user.providerUserModel.location.longitude}`,
+                key: "providerLocation",
+              },
+              {
+                label: "Number of Reviews",
+                value: user.providerUserModel.numReviews,
+                key: "numReviews",
+              },
+              {
+                label: "Overall Rating",
+                value: user.providerUserModel.overallRating,
+                key: "overallRating",
+              },
+              {
+                label: "Provider Images",
+                value: user.providerUserModel.providerImages,
+                key: "providerImages",
+              },
+              {
+                label: "Provider Type",
+                value: user.providerUserModel.providerType,
+                key: "providerType",
+              },
+              {
+                label: "Salon Title",
+                value: user.providerUserModel.salonTitle,
+                key: "salonTitle",
+              },
+              {
+                label: "Work Day From",
+                value: user.providerUserModel.workDayFrom,
+                key: "workDayFrom",
+              },
+              {
+                label: "Work Day To",
+                value: user.providerUserModel.workDayTo,
+                key: "workDayTo",
+              },
+              {
+                label: "Schedule",
+                value: user.providerUserModel.schedule,
+                key: "schedule",
+              },
+            ].map(({ label, key, value }, index) =>
+              key !== "schedule" ? (
+                key === "providerImages" ? (
+                  isEditing ? (
+                    <div className="mb-4" key={index}>
+                      <label className="block mb-2 font-medium text-gray-700">
+                        Provider Picture:
+                      </label>
+                      <input
+                        type="text"
+                        name="photoURL"
+                        value={editData.photoURL || ""}
+                        onChange={handleInputChange}
+                        placeholder="Profile Picture URL"
+                        className="border border-gray-300 rounded-md w-full px-2 py-1"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex flex-col mb-5" key={index}>
+                      <div className="w-1/2 text-left text-sm md:text-base">
+                        <strong>Profile Picture</strong>
+                      </div>
+                      {value.map((image) => {
+                        <img
+                          src={image}
+                          alt="User Photo"
+                          className="w-48 h-48 object-cover mt-5 rounded-t-lg"
+                        />;
+                      })}
+                    </div>
+                  )
+                ) : (
+                  <div
+                    key={index}
+                    className="flex border-b text-[#525252] py-4 mb-4"
+                  >
+                    <div className="w-1/2 text-left text-sm md:text-base">
+                      <strong>{label}:</strong>
+                    </div>
+                    <div className="w-1/2 text-right text-sm md:text-base">
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          name={key}
+                          value={editData[key] || ""}
+                          onChange={handleInputChange}
+                          className="border rounded p-1 w-full"
+                        />
+                      ) : (
+                        value || "N/A"
+                      )}
+                    </div>
+                  </div>
+                )
+              ) : (
+                <ScheduleDisplay schedule={value} />
+              )
+            )}
+          </div>
+          <div className="flex gap-2 mt-4">
+            {isEditing ? (
+              <>
+                <button
+                  onClick={handleSave}
+                  className="bg-green-500 text-white px-4 py-2 rounded-md"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="bg-gray-500 text-white px-4 py-2 rounded-md"
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="bg-blue-500 text-white px-4 py-2 rounded-md"
+              >
+                Edit
+              </button>
+            )}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
+const fetchAddress = async (latitude, longitude) => {
+  try {
+    const response = await axios.get(
+      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+    );
+    if (response.data && response.data.address) {
+      const fullAddress = response.data.address;
+      return `${fullAddress.road || ""}, ${fullAddress.city || ""}, ${
+        fullAddress.state || ""
+      }, ${fullAddress.country || ""}`;
+    } else {
+      setError("Unable to fetch address.");
+    }
+  } catch (error) {
+    console.error("Error fetching address:", error);
+    setError("Failed to fetch address. Please try again.");
+  }
+};
+
+const ScheduleDisplay = ({ schedule }) => {
+  console.log(schedule);
+
+  // Convert the schedule object to an array
+  const scheduleArray = Object.values(schedule);
+
+  console.log(scheduleArray);
+  return (
+    <div className="p-4 bg-white rounded shadow-md">
+      <h2 className="text-lg font-semibold mb-4">Schedule</h2>
+      <ul>
+        {scheduleArray.map((day) => (
+          <li
+            key={day.id}
+            className="flex justify-between items-center border-b py-2"
+          >
+            <span className="font-medium">{day.dayName}</span>
+            {day.isEnable ? (
+              day.fromTime && day.toTime ? (
+                <span>
+                  {day.fromTime} - {day.toTime}
+                </span>
+              ) : (
+                <span className="text-gray-500">Not Available</span>
+              )
+            ) : (
+              <span className="text-red-500">Disabled</span>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 export default UserCard;
-import axios from "axios";
-import { useEffect, useState } from "react";
-
-const CoordinatesToAddress = ({ latitude, longitude }) => {
-  const [address, setAddress] = useState(null);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchAddress = async () => {
-      try {
-        const response = await axios.get(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-        );
-
-        if (response.data && response.data.address) {
-          const fullAddress = response.data.address;
-          setAddress(
-            `${fullAddress.road || ""}, ${fullAddress.city || ""}, ${
-              fullAddress.state || ""
-            }, ${fullAddress.country || ""}`
-          );
-        } else {
-          setError("Unable to fetch address.");
-        }
-      } catch (error) {
-        console.error("Error fetching address:", error);
-        setError("Failed to fetch address. Please try again.");
-      }
-    };
-
-    if (latitude && longitude) {
-      fetchAddress();
-    }
-  }, [latitude, longitude]);
-
-  return (
-    <div>
-      {error && <p>{error}</p>}
-      {address ? <p>Address: {address}</p> : <p>Loading address...</p>}
-    </div>
-  );
-};

@@ -1,26 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { ref, get, set, update, remove } from "firebase/database";
-import { database } from "../../firebase"; // Adjust the import based on your project structure
-import UserCard from "@/components/UserCard";
-const UserList = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [formState, setFormState] = useState({
-    uid: "",
-    state: "",
-    location: "",
-    photoURL: "",
-  });
+import React, { useEffect, useState } from "react";
+import { Table, Checkbox, Button, Modal, Input, Form } from "antd";
+import { get, ref } from "firebase/database";
+import { database } from "@/firebase.mjs";
+import Link from "next/link";
 
-  // Fetch users from Firebase
+const UserPage = () => {
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
   const fetchUsers = async () => {
     const dataRef = ref(database, "users");
     try {
       const snapshot = await get(dataRef);
       if (snapshot.exists()) {
-        return snapshot.val();
+        setUsers(Object.values(snapshot.val()));
       } else {
         setError("No data available");
         return null;
@@ -28,166 +22,147 @@ const UserList = () => {
     } catch (error) {
       setError("Failed to fetch data. Please try again.");
       console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
     }
   };
+  const columns = [
+    {
+      title: "Name",
+      dataIndex: "fullName",
+      key: "fullName",
+    },
+    {
+      title: "Contact",
+      dataIndex: "contactNumber",
+      key: "contactNumber",
+    },
+    {
+      title: "State",
+      dataIndex: "state",
+      key: "state",
+    },
+    {
+      title: "Pincode",
+      dataIndex: "pincode",
+      key: "pincode",
+    },
+    {
+      title: "Requests",
+      dataIndex: "requestsThisMonth",
+      key: "requestsThisMonth",
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => (
+        <div className="flex gap-2">
+          <Link href={`/Users/${record.uid}`}>
+            <Button type="link">View</Button>
+          </Link>
+          <Button
+            type="link"
+            danger
+            onClick={() => handleDeleteUsers([record.uid])}
+          >
+            Delete
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
-  // Load users on component mount
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: setSelectedRowKeys,
+  };
   useEffect(() => {
-    const getData = async () => {
-      const fetchedUsers = await fetchUsers();
-      if (fetchedUsers) {
-        setUsers(Object.values(fetchedUsers));
-      }
-    };
-    getData();
+    fetchUsers();
   }, []);
-
-  // Search functionality
-  const handleSearch = (event) => {
-    setSearchQuery(event.target.value);
-  };
-
-  const filteredUsers = users.filter(
-    (user) =>
-      user.uid?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.state?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Add new user
-  const handleAddUser = async (newUser) => {
-    if (!newUser.uid) {
-      alert("UID is required!");
-      return;
+  const handleAddOrEditUser = (values) => {
+    if (editingUser) {
+      // Update existing user logic
+      console.log("Edit user:", { ...editingUser, ...values });
+    } else {
+      // Add new user logic
+      handleAddUser(values);
     }
-    const userRef = ref(database, `users/${newUser.uid}`);
-    try {
-      await set(userRef, newUser);
-      setUsers((prevUsers) => [...prevUsers, newUser]);
-      setFormState({ uid: "", state: "", location: "", photoURL: "" }); // Reset form
-    } catch (error) {
-      setError("Failed to add user. Please try again.");
-      console.error("Error adding user:", error);
-    }
+    setIsModalVisible(false);
+    setEditingUser(null);
   };
-
-  // Edit user
-  const handleEditUser = async (uid, updatedFields) => {
-    const userRef = ref(database, `users/${uid}`);
-    try {
-      await update(userRef, updatedFields);
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.uid === uid ? { ...user, ...updatedFields } : user
-        )
-      );
-    } catch (error) {
-      setError("Failed to edit user. Please try again.");
-      console.error("Error editing user:", error);
-    }
-  };
-
-  // Delete user
-  const handleDeleteUser = async (uid) => {
-    const userRef = ref(database, `users/${uid}`);
-    try {
-      await remove(userRef);
-      setUsers((prevUsers) => prevUsers.filter((user) => user.uid !== uid));
-    } catch (error) {
-      setError("Failed to delete user. Please try again.");
-      console.error("Error deleting user:", error);
-    }
-  };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">User List</h1>
-
-      {/* Search Bar */}
-      <input
-        type="text"
-        placeholder="Search users by UID or state..."
-        value={searchQuery}
-        onChange={handleSearch}
-        className="mb-4 px-4 py-2 border border-gray-300 rounded-md w-full"
-      />
-
-      {/* Add User Form */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleAddUser(formState);
-        }}
-        className="mb-6"
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <input
-            type="text"
-            placeholder="UID"
-            value={formState.uid}
-            onChange={(e) =>
-              setFormState({ ...formState, uid: e.target.value })
-            }
-            className="px-4 py-2 border border-gray-300 rounded-md"
-          />
-          <input
-            type="text"
-            placeholder="State"
-            value={formState.state}
-            onChange={(e) =>
-              setFormState({ ...formState, state: e.target.value })
-            }
-            className="px-4 py-2 border border-gray-300 rounded-md"
-          />
-          <input
-            type="text"
-            placeholder="Location"
-            value={formState.location}
-            onChange={(e) =>
-              setFormState({ ...formState, location: e.target.value })
-            }
-            className="px-4 py-2 border border-gray-300 rounded-md"
-          />
-          <input
-            type="text"
-            placeholder="Photo URL"
-            value={formState.photoURL}
-            onChange={(e) =>
-              setFormState({ ...formState, photoURL: e.target.value })
-            }
-            className="px-4 py-2 border border-gray-300 rounded-md"
-          />
-        </div>
-        <button
-          type="submit"
-          className="mt-4 bg-green-500 text-white px-6 py-2 rounded-md"
+    <div>
+      <div className="flex justify-between mb-4">
+        <Button
+          type="primary"
+          onClick={() => {
+            setEditingUser(null);
+            setIsModalVisible(true);
+          }}
         >
           Add User
-        </button>
-      </form>
-
-      {/* User Cards */}
-      <div className="flex flex-wrap gap-4 justify-start">
-        {filteredUsers.map((user) => (
-          <UserCard
-            key={user.uid}
-            {...user}
-            onDelete={handleDeleteUser}
-            onEdit={handleEditUser}
-          />
-        ))}
+        </Button>
+        <Button
+          type="danger"
+          onClick={() => handleDeleteUsers(selectedRowKeys)}
+          disabled={selectedRowKeys.length === 0}
+        >
+          Delete Selected
+        </Button>
       </div>
+      <Table
+        rowSelection={rowSelection}
+        columns={columns}
+        dataSource={users.map((user) => ({
+          ...user,
+          key: user.uid,
+        }))}
+      />
+      <Modal
+        title={editingUser ? "Edit User" : "Add User"}
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        footer={null}
+      >
+        <Form
+          initialValues={editingUser || {}}
+          onFinish={handleAddOrEditUser}
+          layout="vertical"
+        >
+          <Form.Item
+            name="fullName"
+            label="Full Name"
+            rules={[{ required: true, message: "Please enter the full name" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="contactNumber"
+            label="Contact Number"
+            rules={[
+              { required: true, message: "Please enter the contact number" },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item name="state" label="State">
+            <Input />
+          </Form.Item>
+          <Form.Item name="pincode" label="Pincode">
+            <Input />
+          </Form.Item>
+          <Form.Item name="requestsThisMonth" label="Requests This Month">
+            <Input type="number" />
+          </Form.Item>
+          <div className="flex justify-end gap-2">
+            <Button onClick={() => setIsModalVisible(false)}>Cancel</Button>
+            <Button type="primary" htmlType="submit">
+              {editingUser ? "Update" : "Add"}
+            </Button>
+          </div>
+        </Form>
+      </Modal>
     </div>
   );
 };
 
-export default UserList;
+export default UserPage;
