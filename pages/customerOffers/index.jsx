@@ -48,7 +48,7 @@ const CustomerOffersPage = () => {
         )
       );
       setOffers((prevOffers) =>
-        prevOffers.filter((offer) => !offerIds.includes(offer.id))
+        prevOffers.filter((offer) => !offerIds.includes(offer.offerId))
       );
       setSelectedRowKeys([]);
     } catch (error) {
@@ -114,7 +114,7 @@ const CustomerOffersPage = () => {
                   onChange={(event) =>
                     setSelectedRowKeys(
                       event.target.checked
-                        ? offers.map((offer) => offer.id)
+                        ? offers.map((offer) => offer.offerId)
                         : []
                     )
                   }
@@ -124,28 +124,30 @@ const CustomerOffersPage = () => {
               <TableCell className="py-2 px-4 text-left">Description</TableCell>
               <TableCell className="py-2 px-4 text-left">Type</TableCell>
               <TableCell className="py-2 px-4 text-left">Price Range</TableCell>
-              <TableCell className="py-2 px-4 text-left">Deposit Payment</TableCell>
+              <TableCell className="py-2 px-4 text-left">
+                Deposit Payment
+              </TableCell>
               <TableCell className="py-2 px-4 text-left">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredOffers.map((offer) => (
               <TableRow
-                key={offer.id}
+                key={offer.offerId}
                 className="border-t"
-                selected={selectedRowKeys.includes(offer.id)}
+                selected={selectedRowKeys.includes(offer.offerId)}
               >
                 <TableCell padding="checkbox">
                   <Checkbox
-                    checked={selectedRowKeys.includes(offer.id)}
+                    checked={selectedRowKeys.includes(offer.offerId)}
                     onChange={(event) => {
-                      const selectedIndex = selectedRowKeys.indexOf(offer.id);
+                      const selectedIndex = selectedRowKeys.indexOf(offer.offerId);
                       let newSelected = [];
 
                       if (selectedIndex === -1) {
                         newSelected = newSelected.concat(
                           selectedRowKeys,
-                          offer.id
+                          offer.offerId
                         );
                       } else if (selectedIndex === 0) {
                         newSelected = newSelected.concat(
@@ -174,7 +176,7 @@ const CustomerOffersPage = () => {
                   {offer.deposit ? "Provided" : "Not Provided"}
                 </TableCell>
                 <TableCell className="py-2 px-4 flex space-x-2">
-                  <Link href={`/customerOffers/${offer.id}`}>
+                  <Link href={`/customerOffers/${offer.offerId}`}>
                     <button className="px-3 py-1 text-purple-500 border-2 border-purple-500 rounded-md">
                       View
                     </button>
@@ -182,7 +184,7 @@ const CustomerOffersPage = () => {
                   <Button
                     variant="text"
                     color="error"
-                    onClick={() => handleDeleteOffers([offer.id])}
+                    onClick={() => handleDeleteOffers([offer.offerId])}
                   >
                     Delete
                   </Button>
