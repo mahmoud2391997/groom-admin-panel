@@ -1,6 +1,6 @@
 import axios from "axios";
-
-const { useEffect, useState } = require("react");
+import PropTypes from "prop-types";
+import { useEffect, useState } from "react";
 
 const CoordinatesToAddress = ({ latitude, longitude }) => {
   const [address, setAddress] = useState(null);
@@ -41,4 +41,10 @@ const CoordinatesToAddress = ({ latitude, longitude }) => {
     </div>
   );
 };
+
+CoordinatesToAddress.propTypes = {
+  latitude: PropTypes.number.isRequired,
+  longitude: PropTypes.number.isRequired,
+};
+
 export default CoordinatesToAddress;

@@ -1,19 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  TableContainer,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Checkbox,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-} from "@mui/material";
+import { Table, Checkbox, Button, Modal, Input, Form } from "antd";
 import { get, ref } from "firebase/database";
 import { database } from "@/firebase.mjs";
 import Link from "next/link";
@@ -31,22 +17,71 @@ const UserPage = () => {
       if (snapshot.exists()) {
         setUsers(Object.values(snapshot.val()));
       } else {
-        setError("No data available");
         return null;
       }
     } catch (error) {
-      setError("Failed to fetch data. Please try again.");
       console.error("Error fetching data:", error);
     }
   };
+  const columns = [
+    {
+      title: "Name",
+      dataIndex: "fullName",
+      key: "fullName",
+    },
+    {
+      title: "Contact",
+      dataIndex: "contactNumber",
+      key: "contactNumber",
+    },
+    {
+      title: "State",
+      dataIndex: "state",
+      key: "state",
+    },
+    {
+      title: "Pincode",
+      dataIndex: "pincode",
+      key: "pincode",
+    },
+    {
+      title: "Requests",
+      dataIndex: "requestsThisMonth",
+      key: "requestsThisMonth",
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => (
+        <div className="flex gap-2">
+          <Link href={`/Users/${record.uid}`}>
+            <Button type="link">View</Button>
+          </Link>
+          <Button
+            type="link"
+            danger
+            onClick={() => handleDeleteUsers([record.uid])}
+          >
+            Delete
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: setSelectedRowKeys,
+  };
+  useEffect(() => {
+    fetchUsers();
+  }, []);
   const handleAddOrEditUser = (values) => {
     if (editingUser) {
       // Update existing user logic
       console.log("Edit user:", { ...editingUser, ...values });
     } else {
       // Add new user logic
-      handleAddUser(values);
     }
     setIsModalVisible(false);
     setEditingUser(null);
@@ -70,8 +105,7 @@ const UserPage = () => {
           Add User
         </Button>
         <Button
-          variant="contained"
-          color="secondary"
+          type="danger"
           onClick={() => handleDeleteUsers(selectedRowKeys)}
           disabled={selectedRowKeys.length === 0}
         >

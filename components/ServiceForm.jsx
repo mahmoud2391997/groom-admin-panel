@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import PropTypes from "prop-types";
 
 const ServiceForm = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -169,6 +170,10 @@ const ServiceForm = ({ onSubmit }) => {
       </button>
     </form>
   );
+};
+
+ServiceForm.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
 };
 
 export default ServiceForm;

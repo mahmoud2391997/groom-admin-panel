@@ -1,4 +1,4 @@
-import React from "react";
+import PropTypes from "prop-types";
 
 const ServiceCard = ({
   serviceId, // Unique ID for the service
@@ -83,6 +83,27 @@ const ServiceCard = ({
   );
 };
 
+ServiceCard.propTypes = {
+  serviceId: PropTypes.string.isRequired,
+  address: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  cancellationPolicy: PropTypes.string.isRequired,
+  serviceImages: PropTypes.array.isRequired,
+  appointmentDuration: PropTypes.number.isRequired,
+  bufferTime: PropTypes.number.isRequired,
+  location: PropTypes.shape({
+    latitude: PropTypes.number.isRequired,
+    longitude: PropTypes.number.isRequired,
+  }).isRequired,
+  maximumBookingPerDay: PropTypes.number.isRequired,
+  serviceDeposit: PropTypes.number.isRequired,
+  serviceName: PropTypes.string.isRequired,
+  onUpdate: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  latitude: PropTypes.number.isRequired,
+  longitude: PropTypes.number.isRequired,
+};
+
 export default ServiceCard;
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -125,4 +146,9 @@ const CoordinatesToAddress = ({ latitude, longitude }) => {
       {address ? <p>Address: {address}</p> : <p>Loading address...</p>}
     </div>
   );
+};
+
+CoordinatesToAddress.propTypes = {
+  latitude: PropTypes.number.isRequired,
+  longitude: PropTypes.number.isRequired,
 };

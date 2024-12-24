@@ -1,9 +1,8 @@
 import "@/styles/globals.css";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import PropTypes from "prop-types";
-import { ref, get } from "firebase/database";
-import { database } from "../firebase";
+
 import { Poppins } from "next/font/google";
 const poppins = Poppins({
   subsets: ["latin"],
@@ -48,7 +47,7 @@ export default function App({ Component, pageProps }) {
     } else {
       console.log("Token is valid");
     }
-  }, []);
+  }, [router]);
   function handleLogout() {
     sessionStorage.removeItem("isLoggedIn");
     router.replace("/");

@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { get, ref } from "firebase/database";
 import { database } from "@/firebase.mjs";
@@ -35,14 +34,14 @@ const ProviderServicesPage = () => {
   };
   useEffect(() => {
     fetchSercives();
-  }, []);
+  }, [services]);
   useEffect(() => {
     setFilteredServices(
       services.filter((service) =>
         service.serviceName.toLowerCase().includes(searchQuery.toLowerCase())
       )
     );
-  }, [searchQuery]);
+  }, [searchQuery, services]);
 
   console.log(filteredServices);
 

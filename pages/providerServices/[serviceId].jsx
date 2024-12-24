@@ -1,9 +1,8 @@
-import CoordinatesToAddress from "@/components/CoordinatesToAddress";
 import { database } from "@/firebase.mjs";
 import axios from "axios";
 import { get, ref, update, remove } from "firebase/database";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 const SingleServicePage = () => {
   const [state, setState] = useState({
@@ -35,35 +34,6 @@ const SingleServicePage = () => {
       console.error("Error fetching address:", error);
     }
   };
-
-  const fetchSingleService = async (serviceId) => {
-    const dataRef = ref(database, `providerServices/${serviceId}`);
-    setState((prevState) => ({ ...prevState, loading: true, error: null }));
-
-    try {
-      const snapshot = await get(dataRef);
-      if (snapshot.exists()) {
-        const service = locationToAddress(snapshot.val());
-        setState({ service, loading: false, error: null });
-        setEditData(service); // Initialize edit form with existing service data
-      } else {
-        setState({ service: null, loading: false, error: "No data available" });
-      }
-    } catch (error) {
-      setState({
-        service: null,
-        loading: false,
-        error: "Failed to fetch data. Please try again.",
-      });
-    }
-  };
-
-  function locationToAddress(obj) {
-    console.log(obj);
-
-    const address = fetchAddress(obj.location.latitude, obj.location.longitude);
-    return { ...obj, locationAddress: address };
-  }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -97,7 +67,35 @@ const SingleServicePage = () => {
   const { service, loading, error } = state;
 
   useEffect(() => {
+    const locationToAddress = async (location) => {
+      console.log(location);
+
+      const address = await fetchAddress(location.latitude, location.longitude);
+      return { ...location, locationAddress: address };
+    };
+
     if (serviceId) {
+      const fetchSingleService = async (serviceId) => {
+        const dataRef = ref(database, `providerServices/${serviceId}`);
+        setState((prevState) => ({ ...prevState, loading: true, error: null }));
+
+        try {
+          const snapshot = await get(dataRef);
+          if (snapshot.exists()) {
+            const service = await locationToAddress(snapshot.val());
+            setState({ service, loading: false, error: null });
+            setEditData(service); // Initialize edit form with existing service data
+          } else {
+            setState({ service: null, loading: false, error: "No data available" });
+          }
+        } catch (error) {
+          setState({
+            service: null,
+            loading: false,
+            error: "Failed to fetch data. Please try again.",
+          });
+        }
+      };
       fetchSingleService(serviceId);
     }
   }, [serviceId]);

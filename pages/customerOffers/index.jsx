@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { get, ref, push, remove, update } from "firebase/database";
+import { get, ref } from "firebase/database";
 import { database } from "@/firebase";
 import Link from "next/link";
-import { useRouter } from "next/router";
 
 const ServicesPage = () => {
   const [services, setServices] = useState([]);
@@ -11,14 +10,15 @@ const ServicesPage = () => {
   const [error, setError] = useState(null);
   const [filteredServices, setFilteredServices] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const router = useRouter();
+
   useEffect(() => {
     setFilteredServices(
       services.filter((service) =>
         service.serviceName.toLowerCase().includes(searchQuery.toLowerCase())
       )
     );
-  }, [searchQuery]);
+  }, [searchQuery, services]);
+
   const fetchServices = async () => {
     const dataRef = ref(database, "customerOffers");
     try {
@@ -53,40 +53,9 @@ const ServicesPage = () => {
     }
   };
 
-  const handleAddService = async (newService) => {
-    const dataRef = ref(database, "customerOffers");
-    try {
-      await push(dataRef, newService);
-      fetchServices(); // Refresh services after adding
-      setShowForm(false); // Close form after submission
-    } catch (error) {
-      console.error("Error adding service:", error);
-    }
-  };
-
-  const handleUpdateService = async (id, updatedData) => {
-    const dataRef = ref(database, `customerOffers/${id}`);
-    try {
-      await update(dataRef, updatedData);
-      fetchServices(); // Refresh services after updating
-    } catch (error) {
-      console.error("Error updating service:", error);
-    }
-  };
-
-  const handleDeleteService = async (id) => {
-    const dataRef = ref(database, `customerOffers/${id}`);
-    try {
-      await remove(dataRef);
-      fetchServices(); // Refresh services after deleting
-    } catch (error) {
-      console.error("Error deleting service:", error);
-    }
-  };
-
   useEffect(() => {
     fetchServices();
-  }, []);
+  }, [services]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;

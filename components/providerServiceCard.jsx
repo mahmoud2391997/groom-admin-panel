@@ -1,4 +1,4 @@
-import React from "react";
+import PropTypes from 'prop-types';
 
 const ProviderServiceCard = ({
   serviceName,
@@ -65,6 +65,21 @@ const ProviderServiceCard = ({
       </div>
     </div>
   );
+};
+
+ProviderServiceCard.propTypes = {
+  serviceName: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  address: PropTypes.string.isRequired,
+  servicePrice: PropTypes.number.isRequired,
+  serviceDeposit: PropTypes.number.isRequired,
+  maximumBookingPerDay: PropTypes.number.isRequired,
+  workingHours: PropTypes.array.isRequired,
+  appointmentDuration: PropTypes.number.isRequired,
+  bufferTime: PropTypes.number.isRequired,
+  cancellationPolicy: PropTypes.string.isRequired,
+  serviceImage: PropTypes.string.isRequired,
+  serviceType: PropTypes.string.isRequired,
 };
 
 export default ProviderServiceCard;
