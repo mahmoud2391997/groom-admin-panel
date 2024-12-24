@@ -1,9 +1,8 @@
 import "@/styles/globals.css";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import PropTypes from "prop-types";
-import { ref, get } from "firebase/database";
-import { database } from "../firebase";
+
 import { Poppins } from "next/font/google";
 const poppins = Poppins({
   subsets: ["latin"],

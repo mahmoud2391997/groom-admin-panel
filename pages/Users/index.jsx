@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Table, Checkbox, Button, Modal, Input, Form } from "antd";
+import { useEffect, useState } from "react";
+import { Table, Button, Modal, Input, Form } from "antd";
 import { get, ref } from "firebase/database";
 import { database } from "@/firebase.mjs";
 import Link from "next/link";
@@ -16,11 +16,9 @@ const UserPage = () => {
       if (snapshot.exists()) {
         setUsers(Object.values(snapshot.val()));
       } else {
-        setError("No data available");
         return null;
       }
     } catch (error) {
-      setError("Failed to fetch data. Please try again.");
       console.error("Error fetching data:", error);
     }
   };
@@ -58,11 +56,7 @@ const UserPage = () => {
           <Link href={`/Users/${record.uid}`}>
             <Button type="link">View</Button>
           </Link>
-          <Button
-            type="link"
-            danger
-            onClick={() => handleDeleteUsers([record.uid])}
-          >
+          <Button type="link" danger>
             Delete
           </Button>
         </div>
@@ -83,7 +77,6 @@ const UserPage = () => {
       console.log("Edit user:", { ...editingUser, ...values });
     } else {
       // Add new user logic
-      handleAddUser(values);
     }
     setIsModalVisible(false);
     setEditingUser(null);
@@ -101,11 +94,7 @@ const UserPage = () => {
         >
           Add User
         </Button>
-        <Button
-          type="danger"
-          onClick={() => handleDeleteUsers(selectedRowKeys)}
-          disabled={selectedRowKeys.length === 0}
-        >
+        <Button type="danger" disabled={selectedRowKeys.length === 0}>
           Delete Selected
         </Button>
       </div>

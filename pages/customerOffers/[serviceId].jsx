@@ -1,7 +1,7 @@
 import { database } from "@/firebase.mjs";
 import { get, ref, remove, update } from "firebase/database";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 const SingleServicePage = () => {
   const [state, setState] = useState({
