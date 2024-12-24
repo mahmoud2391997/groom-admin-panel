@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { useState } from "react";
 import bcrypt from "bcryptjs";
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken"; // Changed from require to import
 import { get, ref, set, update } from "firebase/database";
 import { database } from "@/firebase.mjs";
 import { SignJWT } from "jose";
