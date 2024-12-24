@@ -47,7 +47,7 @@ export default function App({ Component, pageProps }) {
     } else {
       console.log("Token is valid");
     }
-  }, []);
+  }, [router]);
   function handleLogout() {
     sessionStorage.removeItem("isLoggedIn");
     router.replace("/");

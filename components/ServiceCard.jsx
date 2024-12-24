@@ -1,5 +1,5 @@
 // components/ServiceCard.js
-import React from "react";
+import PropTypes from "prop-types";
 
 const ServiceCard = ({
   id, // Add an ID to uniquely identify the service
@@ -71,6 +71,22 @@ const ServiceCard = ({
       </div>
     </div>
   );
+};
+
+ServiceCard.propTypes = {
+  id: PropTypes.string.isRequired,
+  address: PropTypes.string.isRequired,
+  dateTime: PropTypes.string.isRequired,
+  deposit: PropTypes.number.isRequired,
+  description: PropTypes.string.isRequired,
+  offerImages: PropTypes.array.isRequired,
+  priceRange: PropTypes.string.isRequired,
+  radius: PropTypes.number.isRequired,
+  selectedTime: PropTypes.string.isRequired,
+  serviceName: PropTypes.string.isRequired,
+  serviceType: PropTypes.string.isRequired,
+  onUpdate: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
 };
 
 export default ServiceCard;

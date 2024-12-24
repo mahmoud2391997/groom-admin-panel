@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ref, get, update } from "firebase/database";
-import axios from "axios";
 import { database } from "@/firebase.mjs";
+import PropTypes from "prop-types";
 
 const UserCard = ({ uid }) => {
   const [user, setUserData] = useState(null);
@@ -326,13 +326,14 @@ const UserCard = ({ uid }) => {
                       <div className="w-1/2 text-left text-sm md:text-base">
                         <strong>Profile Picture</strong>
                       </div>
-                      {value.map((image) => {
+                      {value.map((image, idx) => (
                         <img
+                          key={idx}
                           src={image}
                           alt="User Photo"
                           className="w-48 h-48 object-cover mt-5 rounded-t-lg"
-                        />;
-                      })}
+                        />
+                      ))}
                     </div>
                   )
                 ) : (
@@ -359,7 +360,7 @@ const UserCard = ({ uid }) => {
                   </div>
                 )
               ) : (
-                <ScheduleDisplay schedule={value} />
+                <ScheduleDisplay key={index} schedule={value} />
               )
             )}
           </div>
@@ -394,23 +395,8 @@ const UserCard = ({ uid }) => {
   );
 };
 
-const fetchAddress = async (latitude, longitude) => {
-  try {
-    const response = await axios.get(
-      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-    );
-    if (response.data && response.data.address) {
-      const fullAddress = response.data.address;
-      return `${fullAddress.road || ""}, ${fullAddress.city || ""}, ${
-        fullAddress.state || ""
-      }, ${fullAddress.country || ""}`;
-    } else {
-      setError("Unable to fetch address.");
-    }
-  } catch (error) {
-    console.error("Error fetching address:", error);
-    setError("Failed to fetch address. Please try again.");
-  }
+UserCard.propTypes = {
+  uid: PropTypes.string.isRequired,
 };
 
 const ScheduleDisplay = ({ schedule }) => {
@@ -447,4 +433,9 @@ const ScheduleDisplay = ({ schedule }) => {
     </div>
   );
 };
+
+ScheduleDisplay.propTypes = {
+  schedule: PropTypes.object.isRequired,
+};
+
 export default UserCard;
