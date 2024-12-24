@@ -193,7 +193,41 @@ const UserCard = ({ uid }) => {
             value: JSON.stringify(user.membership),
             key: "membership",
           },
-
+          {
+            label: "Membership Type",
+            value: user.membership?.type,
+            key: "membershipType",
+          },
+          {
+            label: "Membership Expiry",
+            value: user.membership?.expiry,
+            key: "membershipExpiry",
+          },
+          {
+            label: "Membership Amount",
+            value: user.membership?.amount,
+            key: "membershipAmount",
+          },
+          {
+            label: "Membership Duration",
+            value: user.membership?.duration,
+            key: "membershipDuration",
+          },
+          {
+            label: "Membership Start Date",
+            value: user.membership?.startDate,
+            key: "membershipStartDate",
+          },
+          {
+            label: "Membership End Date",
+            value: user.membership?.endDate,
+            key: "membershipEndDate",
+          },
+          {
+            label: "Membership Total Amount",
+            value: user.membership?.totalAmount,
+            key: "membershipTotalAmount",
+          },
           {
             label: "Notification Status",
             value: user.notification_status,
@@ -414,6 +448,9 @@ const fetchAddress = async (latitude, longitude) => {
 };
 
 const ScheduleDisplay = ({ schedule }) => {
+  if (!schedule) {
+    return <p>No schedule available.</p>;
+  }
   console.log(schedule);
 
   // Convert the schedule object to an array

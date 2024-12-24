@@ -1,92 +1,72 @@
 import React, { useEffect, useState } from "react";
-
-import { get, ref, push, remove, update } from "firebase/database";
-import { database } from "@/firebase";
+import {
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Checkbox,
+  Button,
+} from "@mui/material";
+import { get, ref, remove } from "firebase/database";
+import { database } from "@/firebase.mjs";
 import Link from "next/link";
-import { useRouter } from "next/router";
 
-const ServicesPage = () => {
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
+const CustomerOffersPage = () => {
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [offers, setOffers] = useState([]);
   const [error, setError] = useState(null);
-  const [filteredServices, setFilteredServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filteredOffers, setFilteredOffers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const router = useRouter();
-  useEffect(() => {
-    setFilteredServices(
-      services.filter((service) =>
-        service.serviceName.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    );
-  }, [searchQuery]);
-  const fetchServices = async () => {
+
+  const fetchOffers = async () => {
     const dataRef = ref(database, "customerOffers");
     try {
       const snapshot = await get(dataRef);
       if (snapshot.exists()) {
-        console.log(
-          Object.entries(snapshot.val()).map(([id, value]) => ({
-            id,
-            ...value,
-          }))
-        );
-
-        setServices(
-          Object.entries(snapshot.val()).map(([id, value]) => ({
-            id,
-            ...value,
-          }))
-        );
-        setFilteredServices(
-          Object.entries(snapshot.val()).map(([id, value]) => ({
-            id,
-            ...value,
-          }))
-        );
+        setOffers(Object.values(snapshot.val()));
+        setFilteredOffers(Object.values(snapshot.val()));
       } else {
-        setServices([]); // No data found
+        setError("No data available");
+        return null;
       }
     } catch (error) {
       setError("Failed to fetch data. Please try again.");
+      console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddService = async (newService) => {
-    const dataRef = ref(database, "customerOffers");
+  const handleDeleteOffers = async (offerIds) => {
     try {
-      await push(dataRef, newService);
-      fetchServices(); // Refresh services after adding
-      setShowForm(false); // Close form after submission
+      await Promise.all(
+        offerIds.map((offerId) =>
+          remove(ref(database, `customerOffers/${offerId}`))
+        )
+      );
+      setOffers((prevOffers) =>
+        prevOffers.filter((offer) => !offerIds.includes(offer.id))
+      );
+      setSelectedRowKeys([]);
     } catch (error) {
-      console.error("Error adding service:", error);
-    }
-  };
-
-  const handleUpdateService = async (id, updatedData) => {
-    const dataRef = ref(database, `customerOffers/${id}`);
-    try {
-      await update(dataRef, updatedData);
-      fetchServices(); // Refresh services after updating
-    } catch (error) {
-      console.error("Error updating service:", error);
-    }
-  };
-
-  const handleDeleteService = async (id) => {
-    const dataRef = ref(database, `customerOffers/${id}`);
-    try {
-      await remove(dataRef);
-      fetchServices(); // Refresh services after deleting
-    } catch (error) {
-      console.error("Error deleting service:", error);
+      console.error("Error deleting offers:", error);
     }
   };
 
   useEffect(() => {
-    fetchServices();
+    fetchOffers();
   }, []);
+
+  useEffect(() => {
+    setFilteredOffers(
+      offers.filter((offer) =>
+        offer.serviceName.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [searchQuery, offers]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
@@ -101,48 +81,119 @@ const ServicesPage = () => {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search services"
+          placeholder="Search offers"
           className="border px-4 py-2 rounded-lg w-full"
         />
       </div>
 
-      <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="py-2 px-4 text-left">Service Name</th>
-            <th className="py-2 px-4 text-left">Type</th>
-            <th className="py-2 px-4 text-left">Price Range</th>
-            <th className="py-2 px-4 text-left">Deposit Payment</th>
-            <th className="py-2 px-4 text-left">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredServices.map((service) => (
-            <tr key={service.id} className="border-t">
-              <td className="py-2 px-4">{service.serviceName}</td>
-              <td className="py-2 px-4">{service.serviceType}</td>
-              <td className="py-2 px-4">{service.priceRange}$</td>
-              <td className="py-2 px-4">
-                {service.deposit ? "Provided" : "Not provided"}
-              </td>
-              <td className="py-2 px-4 flex space-x-2">
-                <Link href={`/customerOffers/${service.id}`}>
-                  <button
-                    onClick={() => {
-                      console.log(service.id);
+      <div className="flex justify-between mb-4">
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => handleDeleteOffers(selectedRowKeys)}
+          disabled={selectedRowKeys.length === 0}
+        >
+          Delete Selected
+        </Button>
+      </div>
+
+      <TableContainer>
+        <Table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+          <TableHead>
+            <TableRow className="bg-gray-200">
+              <TableCell padding="checkbox">
+                <Checkbox
+                  indeterminate={
+                    selectedRowKeys.length > 0 &&
+                    selectedRowKeys.length < offers.length
+                  }
+                  checked={
+                    offers.length > 0 &&
+                    selectedRowKeys.length === offers.length
+                  }
+                  onChange={(event) =>
+                    setSelectedRowKeys(
+                      event.target.checked
+                        ? offers.map((offer) => offer.id)
+                        : []
+                    )
+                  }
+                />
+              </TableCell>
+              <TableCell className="py-2 px-4 text-left">Offer Name</TableCell>
+              <TableCell className="py-2 px-4 text-left">Description</TableCell>
+              <TableCell className="py-2 px-4 text-left">Type</TableCell>
+              <TableCell className="py-2 px-4 text-left">Price Range</TableCell>
+              <TableCell className="py-2 px-4 text-left">Deposit Payment</TableCell>
+              <TableCell className="py-2 px-4 text-left">Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredOffers.map((offer) => (
+              <TableRow
+                key={offer.id}
+                className="border-t"
+                selected={selectedRowKeys.includes(offer.id)}
+              >
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    checked={selectedRowKeys.includes(offer.id)}
+                    onChange={(event) => {
+                      const selectedIndex = selectedRowKeys.indexOf(offer.id);
+                      let newSelected = [];
+
+                      if (selectedIndex === -1) {
+                        newSelected = newSelected.concat(
+                          selectedRowKeys,
+                          offer.id
+                        );
+                      } else if (selectedIndex === 0) {
+                        newSelected = newSelected.concat(
+                          selectedRowKeys.slice(1)
+                        );
+                      } else if (selectedIndex === selectedRowKeys.length - 1) {
+                        newSelected = newSelected.concat(
+                          selectedRowKeys.slice(0, -1)
+                        );
+                      } else if (selectedIndex > 0) {
+                        newSelected = newSelected.concat(
+                          selectedRowKeys.slice(0, selectedIndex),
+                          selectedRowKeys.slice(selectedIndex + 1)
+                        );
+                      }
+
+                      setSelectedRowKeys(newSelected);
                     }}
-                    className="px-3 py-1 text-purple-500 border-2 border-purple-500 rounded-md"
+                  />
+                </TableCell>
+                <TableCell className="py-2 px-4">{offer.serviceName}</TableCell>
+                <TableCell className="py-2 px-4">{offer.description}</TableCell>
+                <TableCell className="py-2 px-4">{offer.serviceType}</TableCell>
+                <TableCell className="py-2 px-4">{offer.priceRange}</TableCell>
+                <TableCell className="py-2 px-4">
+                  {offer.deposit ? "Provided" : "Not Provided"}
+                </TableCell>
+                <TableCell className="py-2 px-4 flex space-x-2">
+                  <Link href={`/customerOffers/${offer.id}`}>
+                    <button className="px-3 py-1 text-purple-500 border-2 border-purple-500 rounded-md">
+                      View
+                    </button>
+                  </Link>
+                  <Button
+                    variant="text"
+                    color="error"
+                    onClick={() => handleDeleteOffers([offer.id])}
                   >
-                    View
-                  </button>
-                </Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </div>
   );
 };
 
-export default ServicesPage;
+export default CustomerOffersPage;

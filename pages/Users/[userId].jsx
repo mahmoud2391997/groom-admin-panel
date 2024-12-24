@@ -5,14 +5,6 @@ import { useRouter } from "next/router";
 const PageLayout = () => {
   const router = useRouter();
   const { userId } = router.query;
-  const handleEditUser = (uid, editedData) => {
-    console.log("Edited User:", uid, editedData);
-  };
-
-  const handleDeleteUser = (uid) => {
-    console.log("Deleted User:", uid);
-  };
-  const { serviceId } = router.query;
 
   return (
     <div className="flex flex-col h-screen">

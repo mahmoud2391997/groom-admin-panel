@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 import { ref, get } from "firebase/database";
 import { database } from "../firebase";
 import { Poppins } from "next/font/google";
+import React from 'react';
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["300", "400", "600"], // Add any weights you want to use

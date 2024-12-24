@@ -59,7 +59,7 @@ const SingleServicePage = () => {
       try {
         await remove(ref(database, `customerOffers/${serviceId}`));
         alert("Service deleted successfully.");
-        router.push("/"); // Redirect to homepage or list page
+        router.push("/customerOffers"); // Redirect to customer offers list page
       } catch (error) {
         console.error("Error deleting service:", error);
         alert("Failed to delete service. Please try again.");
@@ -190,10 +190,14 @@ const SingleServicePage = () => {
             </button>
           )}
           <button
-            onClick={handleDelete}
-            className="text-red-600 border-red-600 border-2 px-4 py-2 rounded mr-2"
+            onClick={isEditing ? handleEditToggle : handleDelete}
+            className={`${
+              !isEditing
+                ? "text-red-600 border-red-600"
+                : "text-blue-600  border-blue-600"
+            } border-2 px-4 py-2 rounded mr-2`}
           >
-            Delete
+            {isEditing ? "Cancel" : "Delete"}
           </button>
         </div>
       </div>
