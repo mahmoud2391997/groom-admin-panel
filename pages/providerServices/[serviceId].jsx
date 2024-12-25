@@ -67,11 +67,12 @@ const SingleServicePage = () => {
   const { service, loading, error } = state;
 
   useEffect(() => {
-    const locationToAddress = async (location) => {
-      console.log(location);
-
-      const address = await fetchAddress(location.latitude, location.longitude);
-      return { ...location, locationAddress: address };
+    const locationToAddress = async (service) => {
+      if (service.location) {
+        const address = await fetchAddress(service.location.latitude, service.location.longitude);
+        return { ...service, locationAddress: address };
+      }
+      return service;
     };
 
     if (serviceId) {
@@ -162,7 +163,7 @@ const SingleServicePage = () => {
                   label: "Location",
                   value: service.locationAddress,
                   key: "locationAddress",
-                }, // Not editable
+                },
               ].map(({ label, key, value }, index) => (
                 <div
                   key={index}
@@ -172,7 +173,7 @@ const SingleServicePage = () => {
                     <strong>{label}:</strong>
                   </div>
                   <div className="w-1/2 text-right text-sm md:text-base">
-                    {isEditing && key !== "locationAddress" ? (
+                    {isEditing ? (
                       <input
                         type="text"
                         name={key}

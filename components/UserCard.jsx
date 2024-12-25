@@ -240,6 +240,11 @@ const UserCard = ({ uid }) => {
           <div className="sm:p-6 md:p-10 h-auto w-full mx-auto bg-white rounded-lg mt-7">
             {[
               {
+                label: "Provider Images",
+                value: user.providerUserModel.providerImages,
+                key: "providerImages",
+              },
+              {
                 label: "About",
                 value: user.providerUserModel.about,
                 key: "about",
@@ -275,11 +280,6 @@ const UserCard = ({ uid }) => {
                 key: "overallRating",
               },
               {
-                label: "Provider Images",
-                value: user.providerUserModel.providerImages,
-                key: "providerImages",
-              },
-              {
                 label: "Provider Type",
                 value: user.providerUserModel.providerType,
                 key: "providerType",
@@ -307,32 +307,23 @@ const UserCard = ({ uid }) => {
             ].map(({ label, key, value }, index) =>
               key !== "schedule" ? (
                 key === "providerImages" ? (
-                  isEditing ? (
-                    <div className="mb-4" key={index}>
-                      <label className="block mb-2 font-medium text-gray-700">
-                        Provider Picture:
-                      </label>
-                      <input
-                        type="text"
-                        name="photoURL"
-                        value={editData.photoURL || ""}
-                        onChange={handleInputChange}
-                        placeholder="Profile Picture URL"
-                        className="border border-gray-300 rounded-md w-full px-2 py-1"
-                      />
+                  value ? (
+                    <div className="flex flex-col mb-5" key={index}>
+                      <div className="w-1/2 text-left text-sm md:text-base">
+                        <strong>Provider Images</strong>
+                      </div>
+                      {value.map((image, imgIndex) => (
+                        <img
+                          key={imgIndex}
+                          src={image}
+                          alt="Provider"
+                          className="w-48 h-48 object-cover mt-5 rounded-t-lg"
+                        />
+                      ))}
                     </div>
                   ) : (
                     <div className="flex flex-col mb-5" key={index}>
-                      <div className="w-1/2 text-left text-sm md:text-base">
-                        <strong>Profile Picture</strong>
-                      </div>
-                      {value.map((image) => {
-                        <img
-                          src={image}
-                          alt="User Photo"
-                          className="w-48 h-48 object-cover mt-5 rounded-t-lg"
-                        />;
-                      })}
+                      No Provider Images Provided
                     </div>
                   )
                 ) : (
@@ -415,6 +406,11 @@ const fetchAddress = async (latitude, longitude) => {
 
 const ScheduleDisplay = ({ schedule }) => {
   console.log(schedule);
+
+  // Ensure schedule is not null or undefined
+  if (!schedule) {
+    return <div>No schedule available</div>;
+  }
 
   // Convert the schedule object to an array
   const scheduleArray = Object.values(schedule);
