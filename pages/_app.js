@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import PropTypes from "prop-types";
 
 import { Poppins } from "next/font/google";
-import React from 'react';
+import React from "react";
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["300", "400", "600"], // Add any weights you want to use
@@ -87,7 +87,10 @@ export default function App({ Component, pageProps }) {
               </a>
             </li>
             <li>
-              <a href="/services" className="block py-2 hover:text-purple-700">
+              <a
+                href="/customersComplaints"
+                className="block py-2 hover:text-purple-700"
+              >
                 Customer Complaints
               </a>
             </li>

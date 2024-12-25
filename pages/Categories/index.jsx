@@ -101,7 +101,7 @@ function Categories() {
   return (
     <div className="mt-0 w-full">
       <h2 className="ml-10 mt-10 text-2xl font-bold">Main Categories</h2>
-      <section className="grid gap-2 w-full xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 grid-cols-1 p-5">
+      <section className="grid gap-2 w-full  lg:grid-cols-3 md:grid-cols-2 grid-cols-1 p-5">
         {categories.map((category) => (
           <div
             key={category[0]}

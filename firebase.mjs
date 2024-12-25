@@ -1,4 +1,3 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp, getApps } from "firebase/app";
 import { getDatabase } from "firebase/database";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -22,4 +21,4 @@ if (!getApps().length) {
   app = getApps()[0]; // Use the already-initialized app
 }
 // Initialize Firebase
-export const database = getDatabase(app); // Realtime Database
+export const database = getDatabase(app); // Rea
