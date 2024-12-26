@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { database } from "@/firebase.mjs";
 import { ref, onValue, set } from "firebase/database";
+import {
+  TextField,
+  TablePagination,
+} from "@mui/material";
 
 function CustomerComplaints() {
   const [complaints, setComplaints] = useState([]);
@@ -9,6 +13,10 @@ function CustomerComplaints() {
   const [newComplaint, setNewComplaint] = useState({
     resolutionDetails: "",
   });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredComplaints, setFilteredComplaints] = useState([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     const complaintsRef = ref(database, "customersComplaints");
@@ -16,9 +24,17 @@ function CustomerComplaints() {
       const data = snapshot.val();
       if (data) {
         setComplaints(Object.values(data));
+        setFilteredComplaints(Object.values(data));
       }
     });
   }, []);
+
+  useEffect(() => {
+    const results = complaints.filter(complaint =>
+      complaint.complaintDetails.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredComplaints(results);
+  }, [searchTerm, complaints]);
 
   const handleSaveComplaint = () => {
     if (newComplaint.resolutionDetails) {
@@ -48,10 +64,30 @@ function CustomerComplaints() {
     setFormVisible(true);
   };
 
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   return (
     <div className="w-full p-6">
       <h1 className="text-3xl font-bold mb-6">Customer Complaints</h1>
-
+      <TextField
+        label="Search by complaint details"
+        variant="outlined"
+        fullWidth
+        value={searchTerm}
+        onChange={handleSearchChange}
+        className="mb-4"
+      />
       <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
         <thead>
           <tr className="w-full bg-gray-200">
@@ -64,104 +100,42 @@ function CustomerComplaints() {
           </tr>
         </thead>
         <tbody>
-          {complaints.map((complaint) => (
-            <tr key={complaint.timestamp} className="border-t">
-              <td className="py-2 px-4">{complaint.complaintDetails}</td>
-              <td className="py-2 px-4">{complaint.customerName}</td>
-              <td className="py-2 px-4">
-                <div>id : {complaint.serviceProvider.providerId}</div>
-                <div>name : {complaint.serviceProvider.providerName}</div>
-                <div>contact : {complaint.serviceProvider.contact}</div>
-              </td>
-              <td className="py-2 px-4">{complaint.status}</td>
-              <td className="py-2 px-4">{complaint.resolutionDetails}</td>
-              <td className="py-2 px-4 flex space-x-2">
-                <button
-                  onClick={() => handleEditComplaint(complaint)}
-                  className="px-3 py-1 text-purple-500 border-2 border-purple-500 rounded-md"
-                >
-                  Edit
-                </button>
-              </td>
-            </tr>
-          ))}
+          {filteredComplaints
+            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+            .map((complaint) => (
+              <tr key={complaint.timestamp} className="border-t">
+                <td className="py-2 px-4">{complaint.complaintDetails}</td>
+                <td className="py-2 px-4">{complaint.customerName}</td>
+                <td className="py-2 px-4">
+                  <div>id : {complaint.serviceProvider.providerId}</div>
+                  <div>name : {complaint.serviceProvider.providerName}</div>
+                  <div>contact : {complaint.serviceProvider.contact}</div>
+                </td>
+                <td className="py-2 px-4">{complaint.status}</td>
+                <td className="py-2 px-4">{complaint.resolutionDetails}</td>
+                <td className="py-2 px-4 flex space-x-2">
+                  <button
+                    onClick={() => handleEditComplaint(complaint)}
+                    className="px-3 py-1 text-purple-500 border-2 border-purple-500 rounded-md"
+                  >
+                    Edit
+                  </button>
+                </td>
+              </tr>
+            ))}
         </tbody>
       </table>
-
-      <div className="mt-6">
-        <button
-          onClick={() => setFormVisible(true)}
-          className="px-6 py-3 text-purple-500 border-2 border-purple-500 rounded-lg"
-        >
-          Add Complaint
-        </button>
-      </div>
-
-      {isFormVisible && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-xl font-bold mb-4">
-              {editComplaint ? "Edit Complaint" : "Add New Complaint"}
-            </h2>
-            {editComplaint && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Status</label>
-                <select
-                  value={newComplaint.status}
-                  onChange={(e) =>
-                    setNewComplaint({
-                      ...newComplaint,
-                      status: e.target.value,
-                    })
-                  }
-                  className="border w-full px-3 py-2 rounded-lg"
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="Resolved">Resolved</option>
-                  <option value="Closed">Closed</option>
-                </select>
-              </div>
-            )}
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">
-                Resolution Details
-              </label>
-              <input
-                type="text"
-                value={newComplaint.resolutionDetails}
-                onChange={(e) =>
-                  setNewComplaint({
-                    ...newComplaint,
-                    resolutionDetails: e.target.value,
-                  })
-                }
-                className="border w-full px-3 py-2 rounded-lg"
-                placeholder="Enter details of the resolution (if any)"
-              />
-            </div>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => {
-                  setFormVisible(false);
-                  setEditComplaint(null);
-                  setNewComplaint({
-                    resolutionDetails: "",
-                  });
-                }}
-                className="px-4 py-2 bg-gray-300 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveComplaint}
-                className="px-4 py-2 text-purple-500 border-2 border-purple-500 rounded-lg"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={filteredComplaints.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
+      {/* Remove the "Add Complaint" button */}
+      {/* Remove the form for adding/editing complaints */}
     </div>
   );
 }

@@ -23,13 +23,17 @@ const UserPage = () => {
   const [users, setUsers] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredUsers, setFilteredUsers] = useState([]);
 
   const fetchUsers = async () => {
     const dataRef = ref(database, "users");
     try {
       const snapshot = await get(dataRef);
       if (snapshot.exists()) {
-        setUsers(Object.values(snapshot.val()));
+        const usersData = snapshot.val();
+        setUsers(Object.values(usersData));
+        setFilteredUsers(Object.values(usersData));
       } else {
         setError("No data available");
         return null;
@@ -38,6 +42,21 @@ const UserPage = () => {
       setError("Failed to fetch data. Please try again.");
       console.error("Error fetching data:", error);
     }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    const results = users.filter((user) =>
+      user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredUsers(results);
+  }, [searchTerm, users]);
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
   };
 
   const handleDeleteUsers = async (userIds) => {
@@ -66,10 +85,6 @@ const UserPage = () => {
     setEditingUser(null);
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
   return (
     <div className="w-full p-6">
       <h1 className="text-3xl font-bold mb-6">Users Listing</h1>
@@ -83,6 +98,14 @@ const UserPage = () => {
           Delete Selected
         </Button>
       </div>
+      <TextField
+        label="Search by name"
+        variant="outlined"
+        fullWidth
+        value={searchTerm}
+        onChange={handleSearchChange}
+        className="mb-4"
+      />
       <TableContainer>
         <Table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
           <TableHead>
@@ -112,7 +135,7 @@ const UserPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {users.map((user) => (
+            {filteredUsers.map((user) => (
               <TableRow
                 key={user.uid}
                 selected={selectedRowKeys.includes(user.uid)}
