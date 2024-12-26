@@ -8,8 +8,9 @@ import {
   TableBody,
   TextField,
   TablePagination,
+  Button,
 } from "@mui/material";
-import { get, ref } from "firebase/database";
+import { get, ref, remove } from "firebase/database";
 import { database } from "@/firebase.mjs";
 
 const ReviewsPage = () => {
@@ -25,8 +26,8 @@ const ReviewsPage = () => {
       const snapshot = await get(dataRef);
       if (snapshot.exists()) {
         const reviewsData = snapshot.val();
-        setReviews(Object.values(reviewsData));
-        setFilteredReviews(Object.values(reviewsData));
+        setReviews(Object.entries(reviewsData));
+        setFilteredReviews(Object.entries(reviewsData));
       } else {
         console.error("No reviews data available");
       }
@@ -41,7 +42,7 @@ const ReviewsPage = () => {
 
   useEffect(() => {
     const results = reviews.filter((review) =>
-      review.comment.toLowerCase().includes(searchTerm.toLowerCase())
+      review[1].comment.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredReviews(results);
   }, [searchTerm, reviews]);
@@ -57,6 +58,15 @@ const ReviewsPage = () => {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  const handleDeleteReview = async (timestamp) => {
+    try {
+      await remove(ref(database, `reviews/${timestamp}`));
+      fetchReviews(); // Refresh the reviews list
+    } catch (error) {
+      console.error("Error deleting review:", error);
+    }
   };
 
   return (
@@ -82,6 +92,7 @@ const ReviewsPage = () => {
               <TableCell>Rating</TableCell>
               <TableCell>Comment</TableCell>
               <TableCell>Date</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -89,15 +100,24 @@ const ReviewsPage = () => {
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((review, index) => (
                 <TableRow key={index}>
-                  <TableCell>{review.reviewerName}</TableCell>
-                  <TableCell>{review.reviewerType}</TableCell>
-                  <TableCell>{review.reviewedUserName}</TableCell>
-                  <TableCell>{review.reviewedUserType}</TableCell>
-                  <TableCell>{review.serviceName}</TableCell>
-                  <TableCell>{review.rating}</TableCell>
-                  <TableCell>{review.comment}</TableCell>
+                  <TableCell>{review[1].reviewerName}</TableCell>
+                  <TableCell>{review[1].reviewerType}</TableCell>
+                  <TableCell>{review[1].reviewedUserName}</TableCell>
+                  <TableCell>{review[1].reviewedUserType}</TableCell>
+                  <TableCell>{review[1].serviceName}</TableCell>
+                  <TableCell>{review[1].rating}</TableCell>
+                  <TableCell>{review[1].comment}</TableCell>
                   <TableCell>
-                    {new Date(review.timestamp).toLocaleDateString()}
+                    {new Date(review[1].timestamp).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={() => handleDeleteReview(review[0])}
+                    >
+                      Delete
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
