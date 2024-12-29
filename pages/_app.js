@@ -95,7 +95,7 @@ export default function App({ Component, pageProps }) {
               </a>
             </li>
             <li>
-              <a href="/clients" className="block py-2 hover:text-purple-700">
+              <a href="/RequestReservation" className="block py-2 hover:text-purple-700">
                 Request Reservation
               </a>
             </li>

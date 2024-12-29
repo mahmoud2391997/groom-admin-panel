@@ -69,7 +69,10 @@ const SingleServicePage = () => {
   useEffect(() => {
     const locationToAddress = async (service) => {
       if (service.location) {
-        const address = await fetchAddress(service.location.latitude, service.location.longitude);
+        const address = await fetchAddress(
+          service.location.latitude,
+          service.location.longitude
+        );
         return { ...service, locationAddress: address };
       }
       return service;
@@ -87,7 +90,11 @@ const SingleServicePage = () => {
             setState({ service, loading: false, error: null });
             setEditData(service); // Initialize edit form with existing service data
           } else {
-            setState({ service: null, loading: false, error: "No data available" });
+            setState({
+              service: null,
+              loading: false,
+              error: "No data available",
+            });
           }
         } catch (error) {
           setState({
@@ -122,13 +129,9 @@ const SingleServicePage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-10">
           <div className="w-full h-full flex flex-col">
             <h2 className="text-3xl font-medium">Service Info</h2>
-            <div className="sm:p-6 md:p-10 max-h-[650px] w-full mx-auto bg-white rounded-lg mt-7">
+            <div className="sm:p-6 md:p-10  w-full mx-auto bg-white rounded-lg mt-7">
               {[
-                {
-                  label: "Service Id",
-                  value: service.serviceId,
-                  key: "serviceId",
-                },
+              
                 {
                   label: "Service Name",
                   value: service.serviceName,
@@ -164,6 +167,26 @@ const SingleServicePage = () => {
                   value: service.locationAddress,
                   key: "locationAddress",
                 },
+                {
+                  label: "Appointment Duration",
+                  value: service.appointmentDuration,
+                  key: "appointmentDuration",
+                },
+                {
+                  label: "Buffer Time",
+                  value: service.bufferTime,
+                  key: "bufferTime",
+                },
+                {
+                  label: "Cancellation Policy",
+                  value: service.cancellationPolicy,
+                  key: "cancellationPolicy",
+                },
+                {
+                  label: "Description",
+                  value: service.description,
+                  key: "description",
+                },
               ].map(({ label, key, value }, index) => (
                 <div
                   key={index}
@@ -181,6 +204,8 @@ const SingleServicePage = () => {
                         onChange={handleInputChange}
                         className="border rounded p-1 w-full"
                       />
+                    ) : key === "cancellationPolicy" ? (
+                      <div dangerouslySetInnerHTML={{ __html: value }} />
                     ) : (
                       value || "N/A"
                     )}

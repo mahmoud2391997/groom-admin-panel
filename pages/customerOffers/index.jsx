@@ -178,7 +178,12 @@ const CustomerOffersPage = () => {
                 <TableCell className="py-2 px-4 flex space-x-2">
                   <Link href={`/customerOffers/${offer.offerId}`}>
                     <button className="px-3 py-1 text-purple-500 border-2 border-purple-500 rounded-md">
-                      View
+                      Offer Details
+                    </button>
+                  </Link>
+                  <Link href={`/Users/${offer.userId}`}>
+                    <button className="px-3 py-1 text-purple-500 border-2 border-purple-500 rounded-md">
+                      View Customer
                     </button>
                   </Link>
                   <Button

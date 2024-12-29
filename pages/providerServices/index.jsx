@@ -44,10 +44,14 @@ const ProviderServicesPage = () => {
   const handleDeleteServices = async (serviceIds) => {
     try {
       await Promise.all(
-        serviceIds.map((serviceId) => remove(ref(database, `providerServices/${serviceId}`)))
+        serviceIds.map((serviceId) =>
+          remove(ref(database, `providerServices/${serviceId}`))
+        )
       );
       setServices((prevServices) =>
-        prevServices.filter((service) => !serviceIds.includes(service.serviceId))
+        prevServices.filter(
+          (service) => !serviceIds.includes(service.serviceId)
+        )
       );
       setSelectedRowKeys([]);
     } catch (error) {
@@ -109,16 +113,21 @@ const ProviderServicesPage = () => {
                     selectedRowKeys.length < services.length
                   }
                   checked={
-                    services.length > 0 && selectedRowKeys.length === services.length
+                    services.length > 0 &&
+                    selectedRowKeys.length === services.length
                   }
                   onChange={(event) =>
                     setSelectedRowKeys(
-                      event.target.checked ? services.map((service) => service.serviceId) : []
+                      event.target.checked
+                        ? services.map((service) => service.serviceId)
+                        : []
                     )
                   }
                 />
               </TableCell>
-              <TableCell className="py-2 px-4 text-left">Service Name</TableCell>
+              <TableCell className="py-2 px-4 text-left">
+                Service Name
+              </TableCell>
               <TableCell className="py-2 px-4 text-left">Type</TableCell>
               <TableCell className="py-2 px-4 text-left">Price</TableCell>
               <TableCell className="py-2 px-4 text-left">Deposit</TableCell>
@@ -136,7 +145,9 @@ const ProviderServicesPage = () => {
                   <Checkbox
                     checked={selectedRowKeys.includes(service.serviceId)}
                     onChange={(event) => {
-                      const selectedIndex = selectedRowKeys.indexOf(service.serviceId);
+                      const selectedIndex = selectedRowKeys.indexOf(
+                        service.serviceId
+                      );
                       let newSelected = [];
 
                       if (selectedIndex === -1) {
@@ -163,14 +174,27 @@ const ProviderServicesPage = () => {
                     }}
                   />
                 </TableCell>
-                <TableCell className="py-2 px-4">{service.serviceName}</TableCell>
-                <TableCell className="py-2 px-4">{service.serviceType}</TableCell>
-                <TableCell className="py-2 px-4">${service.servicePrice}</TableCell>
-                <TableCell className="py-2 px-4">${service.serviceDeposit}</TableCell>
+                <TableCell className="py-2 px-4">
+                  {service.serviceName}
+                </TableCell>
+                <TableCell className="py-2 px-4">
+                  {service.serviceType}
+                </TableCell>
+                <TableCell className="py-2 px-4">
+                  ${service.servicePrice}
+                </TableCell>
+                <TableCell className="py-2 px-4">
+                  ${service.serviceDeposit}
+                </TableCell>
                 <TableCell className="py-2 px-4 flex space-x-2">
                   <Link href={`/providerServices/${service.serviceId}`}>
                     <button className="px-3 py-1 text-purple-500 border-2 border-purple-500 rounded-md">
-                      View
+                      Service Details{" "}
+                    </button>
+                  </Link>
+                  <Link href={`/Users/${service.userId}`}>
+                    <button className="px-3 py-1 text-purple-500 border-2 border-purple-500 rounded-md">
+                      View Provider
                     </button>
                   </Link>
                   <Button
